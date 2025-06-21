@@ -12,7 +12,7 @@ app.use('/api/v1', routes);
 app.use('', mockRoutes);
 
 const pinger = new ServerPinger({
-  url: 'https://apimock.onrender.com/',
+  url: 'https://mock-api-generator.onrender.com/api/v1/ping',
   intervalMinutes: 14
 });
 

@@ -24,7 +24,7 @@ class ServerPinger {
 
   async ping() {
     try {
-      const res = await axios.get(this.url);
+      const res = await axios.get(`${this.url}`);
       console.log(`Pinged ${this.url} - Status: ${res.status}`);
     } catch (err) {
       console.error(`Failed to ping ${this.url}: ${err.message}`);
