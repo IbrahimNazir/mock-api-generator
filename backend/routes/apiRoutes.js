@@ -1,14 +1,13 @@
 const express = require('express');
-const apiController = require('../controllers/apiController');
-const { authenticate } = require('../middleware/authenticate');
+const ApiController = require('../controllers/apiController');
+const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-// API Routes
-router.post('/',authenticate, apiController.createApi);
-router.get('/', authenticate, apiController.getAllApis);
-router.get('/:id',authenticate, apiController.getApiById);
-router.put('/:id',authenticate, apiController.updateApi);
-router.delete('/:id',authenticate, apiController.deleteApi);
+router.post('/', auth, ApiController.createApi);
+router.get('/:id', auth, ApiController.getApi);
+router.get('/', auth, ApiController.getAllApis);
+router.put('/:id', auth, ApiController.updateApi);
+router.delete('/:id', auth, ApiController.deleteApi);
 
 module.exports = router;

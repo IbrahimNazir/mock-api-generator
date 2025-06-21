@@ -1,4 +1,4 @@
-const db = require('../config/db');
+const db = require('../db/db');
 const { v4: uuidv4 } = require('uuid');
 const { hashPassword } = require('../utils/passwordUtils');
 
@@ -9,9 +9,9 @@ class User {
     const hashedPassword = await hashPassword(password);
     
     const query = `
-      INSERT INTO users (id, username, email, password, role)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING id, username, email, role, created_at
+      INSERT INTO users (id, username, email, password, role, is_active, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, true, NOW(), NOW())
+      RETURNING id, username, email, role, is_active, created_at
     `;
     
     const values = [id, username, email, hashedPassword, role];
@@ -83,7 +83,7 @@ class User {
       paramIndex++;
     }
     
-    updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
+    updateFields.push(`updated_at = NOW()`);
     
     if (updateFields.length === 0) {
       return null;

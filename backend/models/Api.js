@@ -1,66 +1,57 @@
-const db = require('../config/db');
+const { query } = require('../db/db');
 const { v4: uuidv4 } = require('uuid');
 
 class Api {
-  static async create(apiData) {
-    const { name, description, endpoints, userId } = apiData;
+  static async create({ user_id, name, version, description, base_path, is_public }) {
     const id = uuidv4();
-    
-    const query = `
-      INSERT INTO apis (id, name, description, endpoints, user_id)
-      VALUES ($1, $2, $3, $4, $5)
+    const text = `
+      INSERT INTO apis (id, user_id, name, version, description, base_path, is_public, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
       RETURNING *
     `;
-    
-    const values = [id, name, description, JSON.stringify(endpoints), userId];
-    const result = await db.query(query, values);
-    
+    const values = [id, user_id, name, version, description, base_path, is_public ?? true];
+    const result = await query(text, values);
+    return result.rows[0];
+  }
+
+  static async findById(id) {
+    const text = 'SELECT * FROM apis WHERE id = $1';
+    const result = await query(text, [id]);
     return result.rows[0];
   }
 
   static async findAll() {
-    const query = 'SELECT * FROM apis ORDER BY created_at DESC';
-    const result = await db.query(query);
-    
+    const text = 'SELECT * FROM apis ORDER BY created_at DESC';
+    const result = await query(text);
     return result.rows;
   }
 
-  static async findById(id) {
-    const query = 'SELECT * FROM apis WHERE id = $1';
-    const result = await db.query(query, [id]);
-    
-    return result.rows[0];
+  static async findByUserId(user_id) {
+    const text = 'SELECT * FROM apis WHERE user_id = $1 ORDER BY created_at DESC';
+    const result = await query(text, [user_id]);
+    return result.rows;
   }
 
-  static async update(id, apiData) {
-    const { name, description, endpoints } = apiData;
-    
-    const query = `
+  static async update(id, { name, version, description, base_path, is_public }) {
+    const text = `
       UPDATE apis
       SET name = COALESCE($1, name),
-          description = COALESCE($2, description),
-          endpoints = COALESCE($3, endpoints),
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = $4
+          version = COALESCE($2, version),
+          description = COALESCE($3, description),
+          base_path = COALESCE($4, base_path),
+          is_public = COALESCE($5, is_public),
+          updated_at = NOW()
+      WHERE id = $6
       RETURNING *
     `;
-    
-    const values = [
-      name,
-      description,
-      endpoints ? JSON.stringify(endpoints) : null,
-      id
-    ];
-    
-    const result = await db.query(query, values);
-    
+    const values = [name, version, description, base_path, is_public, id];
+    const result = await query(text, values);
     return result.rows[0];
   }
 
   static async delete(id) {
-    const query = 'DELETE FROM apis WHERE id = $1 RETURNING *';
-    const result = await db.query(query, [id]);
-    
+    const text = 'DELETE FROM apis WHERE id = $1 RETURNING *';
+    const result = await query(text, [id]);
     return result.rows[0];
   }
 }
