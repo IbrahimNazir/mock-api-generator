@@ -11,6 +11,12 @@ app.use(morgan('dev'));
 app.use('/api/v1', routes);
 app.use('', mockRoutes);
 
+const pinger = new ServerPinger({
+  url: 'https://mock-api-generator.onrender.com/api/v1/ping',
+  intervalMinutes: 14
+});
+
+pinger.start();
 
 
 const PORT = process.env.PORT || 3000;
