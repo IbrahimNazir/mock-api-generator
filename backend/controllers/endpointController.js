@@ -1,7 +1,7 @@
 const Endpoint = require('../models/Endpoint');
 const Api = require('../models/Api');
 const ResourceController = require('./resourceController');
-const Resource = require('../models/resource');
+const Resource = require('../models/Resource');
 
 class EndpointController {
   static validateSchema(schema) {
