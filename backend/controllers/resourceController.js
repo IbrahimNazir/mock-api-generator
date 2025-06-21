@@ -1,6 +1,6 @@
 const { faker } = require('@faker-js/faker');
-const Endpoint = require('../models/endpoint');
-const Resource = require('../models/resource');
+const Endpoint = require('../models/Endpoint');
+const Resource = require('../models/Resource');
 
 class ResourceController {
   static generateMockData(schema, count, seed) {
