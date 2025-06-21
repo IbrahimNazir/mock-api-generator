@@ -1,4 +1,4 @@
-const Endpoint = require('../models/endpoint');
+const Endpoint = require('../models/Endpoint');
 const Api = require('../models/api');
 const ResourceController = require('./resourceController');
 const Resource = require('../models/resource');

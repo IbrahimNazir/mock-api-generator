@@ -1,6 +1,6 @@
 const Schema = require('../models/schema');
-const Endpoint = require('../models/endpoint');
-const Api = require('../models/api');
+const Endpoint = require('../models/Endpoint');
+const Api = require('../models/Api');
 
 class SchemaController {
   static validateSchema(schema) {

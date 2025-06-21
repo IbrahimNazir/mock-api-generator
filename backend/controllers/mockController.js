@@ -1,5 +1,5 @@
 const { query } = require('../db/db');
-const Resource = require('../models/resource');
+const Resource = require('../models/Resource');
 const Ajv = require('ajv');
 const ajv = new Ajv({ allErrors: true });
 
