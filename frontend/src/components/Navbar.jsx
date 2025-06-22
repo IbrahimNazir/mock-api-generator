@@ -1,64 +1,16 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { logout } from '../services/auth';
+import React from 'react';
 
-function Navbar() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    setIsAuthenticated(!!localStorage.getItem('accessToken'));
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      setIsAuthenticated(false);
-      navigate('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
-
+const Navbar = ({ onLogout }) => {
   return (
-    <nav className="bg-blue-600 text-white p-4 shadow-md">
+    <nav className="bg-gray-800 p-4 text-white">
       <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold">
-          Mock API
-        </Link>
-        <div className="space-x-4">
-          {isAuthenticated ? (
-            <>
-              <Link to="/dashboard" className="hover:underline">
-                Dashboard
-              </Link>
-              <Link to="/apis" className="hover:underline">
-                APIs
-              </Link>
-              <Link to="/sessions" className="hover:underline">
-                Sessions
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 px-3 py-1 rounded hover:bg-red-600"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="hover:underline">
-                Login
-              </Link>
-              <Link to="/register" className="hover:underline">
-                Register
-              </Link>
-            </>
-          )}
-        </div>
+        <h1 className="text-xl font-bold">MockAPI Clone</h1>
+        <button onClick={onLogout} className="px-4 py-2 bg-red-500 rounded hover:bg-red-600">
+          Logout
+        </button>
       </div>
     </nav>
   );
-}
+};
 
 export default Navbar;

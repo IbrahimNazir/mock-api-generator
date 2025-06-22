@@ -6,6 +6,7 @@ class UserController {
   static async register(req, res) {
     try {
       const { username, email, password, role } = req.body;
+      console.log({ username, email, password, role });
       if (!username || !email || !password) {
         return res.status(400).json({ error: 'Username, email, and password are required' });
       }
