@@ -21,7 +21,7 @@ class ResourceController {
               if (prop.max !== undefined) fakerParams.max = prop.max;
               // String parameters
               if (prop.length !== undefined) fakerParams.length = prop.length;
-if (prop.prefix !== undefined) fakerParams.prefix = prop.prefix; //e.g. prefix for strings
+              if (prop.prefix !== undefined) fakerParams.prefix = prop.prefix; //e.g. prefix for strings
               if (prop.suffix !== undefined) fakerParams.suffix = prop.suffix; //e.g. suffix for strings
               if (prop.minLength !== undefined) fakerParams.minLength = prop.minLength;
               if (prop.maxLength !== undefined) fakerParams.maxLength = prop.maxLength;
@@ -52,8 +52,8 @@ if (prop.prefix !== undefined) fakerParams.prefix = prop.prefix; //e.g. prefix f
           itemCount = schema.minItems;
         }
         // Generate array items
-        const arrayData = ResourceController.generateMockData(schema.items, itemCount, seed ? seed + i : null);
-        data.push(arrayData);
+        mockItem[key] = ResourceController.generateMockData(schema.items, itemCount, seed ? seed + i : null);
+        data.push(mockItem);
       }
       data.push(mockItem);
     }
@@ -99,6 +99,7 @@ if (prop.prefix !== undefined) fakerParams.prefix = prop.prefix; //e.g. prefix f
         return res.status(404).json({ error: 'Endpoint not found' });
       }
       const resource = await Resource.create({ endpoint_id, data });
+      console.log('resource: ',resource)
       res.status(201).json(resource);
     } catch (error) {
       res.status(400).json({ error: error.message });
@@ -132,10 +133,15 @@ if (prop.prefix !== undefined) fakerParams.prefix = prop.prefix; //e.g. prefix f
       if (!data) {
         return res.status(400).json({ error: 'Data is required' });
       }
-      const resource = await Resource.findById(req.params.id);
-      if (!resource) {
-        return res.status(404).json({ error: 'Resource not found' });
+      
+      const endpoint = await Endpoint.findById(endpoint_id);
+      if (!endpoint) {
+        return res.status(404).json({ error: 'Endpoint not found' });
       }
+      // const resource = await Resource.findById(req.params.id);
+      // if (!resource) {
+      //   return res.status(404).json({ error: 'Resource not found' });
+      // }
       const updatedResource = await Resource.update(req.params.id, { data });
       res.json(updatedResource);
     } catch (error) {
