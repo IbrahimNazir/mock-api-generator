@@ -1,0 +1,1654 @@
+{
+	"info": {
+		"_postman_id": "cfcb0b02-269a-492e-ae30-90fd61683660",
+		"name": "API System Collection Revised",
+		"description": "Simplified Postman collection for testing the API system, including user registration, API creation, endpoint creation, and mock endpoint operations for /users, /products, /orders, /reviews.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "41968226"
+	},
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"userId\", jsonData.user.id);",
+									"pm.environment.set(\"token\", jsonData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\":\"testuser\",\"email\":\"test@example.com\",\"password\":\"password123\",\"role\":\"admin\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						},
+						"description": "Registers a new user and returns a JWT token and user details."
+					},
+					"response": [
+						{
+							"name": "Register User",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"username\":\"ibrahim\",\"email\":\"ibrahim@gmail.com\",\"password\":\"ibrahim123\",\"role\":\"admin\"}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users/register",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users",
+										"register"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "378"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"17a-yVHDWvKtNce7L7isHwNM2vLen9k\""
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 21 Jun 2025 21:16:42 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"user\": {\n        \"id\": \"7078ea46-03ee-4f83-b58c-98061907d2e2\",\n        \"username\": \"ibrahim\",\n        \"email\": \"ibrahim@gmail.com\",\n        \"role\": \"admin\",\n        \"is_active\": true,\n        \"created_at\": \"2025-06-21T16:16:42.428Z\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI3MDc4ZWE0Ni0wM2VlLTRmODMtYjU4Yy05ODA2MTkwN2QyZTIiLCJpYXQiOjE3NTA1NDA2MDIsImV4cCI6MTc1MDYyNzAwMn0.fncyWelk1dQiJF81LXGjUEBuCOW0ZJuQsaG9sB_qZXA\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"email\":\"ibrahim@gmail.com\",\"password\":\"ibrahim123\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						},
+						"description": "Logs in a user and returns a JWT token and user details."
+					},
+					"response": [
+						{
+							"name": "Login User",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"email\":\"ibrahim@gmail.com\",\"password\":\"ibrahim123\"}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users/login",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users",
+										"login"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "321"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"141-wN/2IlBXZZKdPI9WQCU7qZhYfEY\""
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 21 Jun 2025 21:17:32 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"user\": {\n        \"id\": \"7078ea46-03ee-4f83-b58c-98061907d2e2\",\n        \"username\": \"ibrahim\",\n        \"email\": \"ibrahim@gmail.com\",\n        \"role\": \"admin\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI3MDc4ZWE0Ni0wM2VlLTRmODMtYjU4Yy05ODA2MTkwN2QyZTIiLCJpYXQiOjE3NTA1NDA2NTIsImV4cCI6MTc1MDYyNzA1Mn0.BZkEd9IcUWgN4GYsHvcVXA1ppc7WR6YItoLkkTNV4wE\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Get User Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"profile"
+							]
+						},
+						"description": "Retrieves the profile of the authenticated user."
+					},
+					"response": [
+						{
+							"name": "Get User Profile",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/users/profile",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users",
+										"profile"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "206"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"ce-YOk8ev2vqjZ2YEZyBVKXgsYP/Bk\""
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 21 Jun 2025 21:17:52 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"7078ea46-03ee-4f83-b58c-98061907d2e2\",\n    \"username\": \"ibrahim\",\n    \"email\": \"ibrahim@gmail.com\",\n    \"role\": \"admin\",\n    \"is_active\": true,\n    \"created_at\": \"2025-06-21T16:16:42.428Z\",\n    \"updated_at\": \"2025-06-21T16:16:42.428Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Update User Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\":\"updateduser\",\"email\":\"updated@example.com\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"profile"
+							]
+						},
+						"description": "Updates the authenticated user's profile (username and email only)."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"profile"
+							]
+						},
+						"description": "Deletes the authenticated user's profile and associated data."
+					},
+					"response": []
+				},
+				{
+					"name": "Get User's APIs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/apis",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"apis"
+							]
+						},
+						"description": "Retrieves all APIs owned by the authenticated user."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "APIs",
+			"item": [
+				{
+					"name": "Create API",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"name\":\"E-Commerce API\",\"version\":\"1.0.0\",\"base_path\":\"/myapi\",\"description\":\"API for e-commerce\",\"is_public\":true}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						}
+					},
+					"response": [
+						{
+							"name": "Create API",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"name\":\"E-Commerce API\",\"version\":\"1.0.0\",\"base_path\":\"/myapi\",\"description\":\"API for e-commerce\",\"is_public\":true}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/apis",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"apis"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "289"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"121-Es5plfRoQ/G7L7dl5DuV1n0wuW0\""
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 21 Jun 2025 21:19:56 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"d4f641fc-1974-43fc-bf28-c91d8805fe1a\",\n    \"user_id\": \"7078ea46-03ee-4f83-b58c-98061907d2e2\",\n    \"name\": \"E-Commerce API\",\n    \"version\": \"1.0.0\",\n    \"description\": \"API for e-commerce\",\n    \"base_path\": \"/myapi\",\n    \"is_public\": true,\n    \"created_at\": \"2025-06-21T16:19:55.777Z\",\n    \"updated_at\": \"2025-06-21T16:19:55.777Z\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Endpoints",
+			"item": [
+				{
+					"name": "Create Users Endpoint",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"const jsonData = pm.response.json();",
+									"pm.environment.set(\"userResourceId\", jsonData.resources[0].id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"api_id\": \"{{apiId}}\",\r\n    \"path\": \"/users\",\r\n    \"methods\": [\r\n        \"GET\",\r\n        \"POST\",\r\n        \"PUT\",\r\n        \"PATCH\"\r\n    ],\r\n    \"description\": \"Manage user profiles\",\r\n    \"mock_enabled\": true,\r\n    \"mock_count\": 2,\r\n    \"faker_seed\": 123,\r\n    \"schema\": {\r\n        \"type\": \"object\",\r\n        \"properties\": {\r\n            \"id\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"uuid\",\r\n                \"faker\": \"string.uuid\",\r\n                \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n            },\r\n            \"username\": {\r\n                \"type\": \"string\",\r\n                \"faker\": \"internet.userName\",\r\n                \"minLength\": 3,\r\n                \"maxLength\": 20\r\n            },\r\n            \"email\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"email\",\r\n                \"faker\": \"internet.email\",\r\n                \"minLength\": 5,\r\n                \"maxLength\": 100\r\n            },\r\n            \"profile\": {\r\n                \"type\": \"object\",\r\n                \"properties\": {\r\n                    \"fullName\": {\r\n                        \"type\": \"string\",\r\n                        \"faker\": \"name.fullName\"\r\n                    },\r\n                    \"age\": {\r\n                        \"type\": \"integer\",\r\n                        \"faker\": \"number.int\",\r\n                        \"minimum\": 18,\r\n                        \"maximum\": 100\r\n                    }\r\n                },\r\n                \"required\": [\r\n                    \"fullName\"\r\n                ]\r\n            }\r\n        },\r\n        \"required\": [\r\n            \"id\",\r\n            \"email\"\r\n        ]\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/endpoints/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"endpoints",
+								""
+							]
+						},
+						"description": "Creates /users endpoint with simple schema."
+					},
+					"response": [
+						{
+							"name": "Create Users Endpoint",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"api_id\": \"{{apiId}}\",\r\n    \"path\": \"/users\",\r\n    \"methods\": [\r\n        \"GET\",\r\n        \"POST\",\r\n        \"PUT\",\r\n        \"PATCH\"\r\n    ],\r\n    \"description\": \"Manage user profiles\",\r\n    \"mock_enabled\": true,\r\n    \"mock_count\": 2,\r\n    \"faker_seed\": 123,\r\n    \"schema\": {\r\n        \"type\": \"object\",\r\n        \"properties\": {\r\n            \"id\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"uuid\",\r\n                \"faker\": \"string.uuid\",\r\n                \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n            },\r\n            \"username\": {\r\n                \"type\": \"string\",\r\n                \"faker\": \"internet.userName\",\r\n                \"minLength\": 3,\r\n                \"maxLength\": 20\r\n            },\r\n            \"email\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"email\",\r\n                \"faker\": \"internet.email\",\r\n                \"minLength\": 5,\r\n                \"maxLength\": 100\r\n            },\r\n            \"profile\": {\r\n                \"type\": \"object\",\r\n                \"properties\": {\r\n                    \"fullName\": {\r\n                        \"type\": \"string\",\r\n                        \"faker\": \"name.fullName\"\r\n                    },\r\n                    \"age\": {\r\n                        \"type\": \"integer\",\r\n                        \"faker\": \"number.int\",\r\n                        \"minimum\": 18,\r\n                        \"maximum\": 100\r\n                    }\r\n                },\r\n                \"required\": [\r\n                    \"fullName\"\r\n                ]\r\n            }\r\n        },\r\n        \"required\": [\r\n            \"id\",\r\n            \"email\"\r\n        ]\r\n    }\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/endpoints/",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"endpoints",
+										""
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "1620"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"654-Jwpvof5IqGJYKs1R9FdIDPoJGMA\""
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 21 Jun 2025 21:28:35 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"endpoint\": {\n        \"id\": \"185a0fea-72b5-44b8-bcbf-2fe6ec65ae3e\",\n        \"api_id\": \"d4f641fc-1974-43fc-bf28-c91d8805fe1a\",\n        \"path\": \"/users\",\n        \"methods\": [\n            \"GET\",\n            \"POST\",\n            \"PUT\",\n            \"PATCH\"\n        ],\n        \"description\": \"Manage user profiles\",\n        \"mock_enabled\": true,\n        \"mock_count\": 2,\n        \"faker_seed\": 123,\n        \"schema\": {\n            \"type\": \"object\",\n            \"required\": [\n                \"id\",\n                \"email\"\n            ],\n            \"properties\": {\n                \"id\": {\n                    \"type\": \"string\",\n                    \"faker\": \"string.uuid\",\n                    \"format\": \"uuid\",\n                    \"default\": \"00000000-0000-0000-0000-000000000000\"\n                },\n                \"email\": {\n                    \"type\": \"string\",\n                    \"faker\": \"internet.email\",\n                    \"format\": \"email\",\n                    \"maxLength\": 100,\n                    \"minLength\": 5\n                },\n                \"profile\": {\n                    \"type\": \"object\",\n                    \"required\": [\n                        \"fullName\"\n                    ],\n                    \"properties\": {\n                        \"age\": {\n                            \"type\": \"integer\",\n                            \"faker\": \"number.int\",\n                            \"maximum\": 100,\n                            \"minimum\": 18\n                        },\n                        \"fullName\": {\n                            \"type\": \"string\",\n                            \"faker\": \"name.fullName\"\n                        }\n                    }\n                },\n                \"username\": {\n                    \"type\": \"string\",\n                    \"faker\": \"internet.userName\",\n                    \"maxLength\": 20,\n                    \"minLength\": 3\n                }\n            }\n        },\n        \"created_at\": \"2025-06-21T16:28:34.439Z\",\n        \"updated_at\": \"2025-06-21T16:28:34.439Z\"\n    },\n    \"resources\": [\n        {\n            \"id\": \"06630666-2fb5-4f38-922c-763fe3a0b9ca\",\n            \"endpoint_id\": \"185a0fea-72b5-44b8-bcbf-2fe6ec65ae3e\",\n            \"data\": {\n                \"id\": \"558c0f29-3c9a-40b1-a017-781e8808eece\",\n                \"email\": \"Shanelle_Hartmann73@gmail.com\",\n                \"profile\": {\n                    \"age\": 4452431031173120,\n                    \"fullName\": \"Mr. Angel Marquardt\"\n                },\n                \"username\": \"Hal72\"\n            },\n            \"created_at\": \"2025-06-21T16:28:34.563Z\",\n            \"updated_at\": \"2025-06-21T16:28:34.563Z\"\n        },\n        {\n            \"id\": \"3d107580-7fd5-4e68-bc22-bf797fae3567\",\n            \"endpoint_id\": \"185a0fea-72b5-44b8-bcbf-2fe6ec65ae3e\",\n            \"data\": {\n                \"id\": \"38a4824d-45a7-4c5a-abd9-ff67cfe0fde0\",\n                \"email\": \"Vicky.Roberts@hotmail.com\",\n                \"profile\": {\n                    \"age\": 2834954270539776,\n                    \"fullName\": \"Winifred Corkery\"\n                },\n                \"username\": \"Hilton.Gottlieb\"\n            },\n            \"created_at\": \"2025-06-21T16:28:34.656Z\",\n            \"updated_at\": \"2025-06-21T16:28:34.656Z\"\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Create Products Endpoint",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"const jsonData = pm.response.json();",
+									"pm.environment.set(\"productResourceId\", jsonData.resources[0].id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"api_id\": \"{{apiId}}\",\r\n    \"path\": \"/products\",\r\n    \"methods\": [\r\n        \"GET\",\r\n        \"POST\"\r\n    ],\r\n    \"description\": \"Manage products\",\r\n    \"mock_enabled\": true,\r\n    \"mock_count\": 2,\r\n    \"faker_seed\": 456,\r\n    \"schema\": {\r\n        \"type\": \"object\",\r\n        \"properties\": {\r\n            \"productId\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"uuid\",\r\n                \"faker\": \"string.uuid\",\r\n                \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n            },\r\n            \"name\": {\r\n                \"type\": \"string\",\r\n                \"faker\": \"commerce.productName\",\r\n                \"minLength\": 3,\r\n                \"maxLength\": 50\r\n            },\r\n            \"price\": {\r\n                \"type\": \"number\",\r\n                \"faker\": \"commerce.price\",\r\n                \"minimum\": 0.01,\r\n                \"maximum\": 1000\r\n            },\r\n            \"inStock\": {\r\n                \"type\": \"boolean\",\r\n                \"faker\": \"datatype.boolean\"\r\n            }\r\n        },\r\n        \"required\": [\r\n            \"productId\",\r\n            \"name\",\r\n            \"price\"\r\n        ]\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/endpoints",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"endpoints"
+							]
+						},
+						"description": "Creates /products endpoint."
+					},
+					"response": [
+						{
+							"name": "Create Products Endpoint",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"api_id\": \"{{apiId}}\",\r\n    \"path\": \"/products\",\r\n    \"methods\": [\r\n        \"GET\",\r\n        \"POST\"\r\n    ],\r\n    \"description\": \"Manage products\",\r\n    \"mock_enabled\": true,\r\n    \"mock_count\": 2,\r\n    \"faker_seed\": 456,\r\n    \"schema\": {\r\n        \"type\": \"object\",\r\n        \"properties\": {\r\n            \"productId\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"uuid\",\r\n                \"faker\": \"string.uuid\",\r\n                \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n            },\r\n            \"name\": {\r\n                \"type\": \"string\",\r\n                \"faker\": \"commerce.productName\",\r\n                \"minLength\": 3,\r\n                \"maxLength\": 50\r\n            },\r\n            \"price\": {\r\n                \"type\": \"number\",\r\n                \"faker\": \"commerce.price\",\r\n                \"minimum\": 0.01,\r\n                \"maximum\": 1000\r\n            },\r\n            \"inStock\": {\r\n                \"type\": \"boolean\",\r\n                \"faker\": \"datatype.boolean\"\r\n            }\r\n        },\r\n        \"required\": [\r\n            \"productId\",\r\n            \"name\",\r\n            \"price\"\r\n        ]\r\n    }\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/endpoints",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"endpoints"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "1356"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"54c-tZjcBn+pnIF9ymRMNZMqKEkJ7zE\""
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 21 Jun 2025 21:29:51 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"endpoint\": {\n        \"id\": \"d249ace5-c3e7-4c96-b8ea-496fd37bc5f8\",\n        \"api_id\": \"d4f641fc-1974-43fc-bf28-c91d8805fe1a\",\n        \"path\": \"/products\",\n        \"methods\": [\n            \"GET\",\n            \"POST\"\n        ],\n        \"description\": \"Manage products\",\n        \"mock_enabled\": true,\n        \"mock_count\": 2,\n        \"faker_seed\": 456,\n        \"schema\": {\n            \"type\": \"object\",\n            \"required\": [\n                \"productId\",\n                \"name\",\n                \"price\"\n            ],\n            \"properties\": {\n                \"name\": {\n                    \"type\": \"string\",\n                    \"faker\": \"commerce.productName\",\n                    \"maxLength\": 50,\n                    \"minLength\": 3\n                },\n                \"price\": {\n                    \"type\": \"number\",\n                    \"faker\": \"commerce.price\",\n                    \"maximum\": 1000,\n                    \"minimum\": 0.01\n                },\n                \"inStock\": {\n                    \"type\": \"boolean\",\n                    \"faker\": \"datatype.boolean\"\n                },\n                \"productId\": {\n                    \"type\": \"string\",\n                    \"faker\": \"string.uuid\",\n                    \"format\": \"uuid\",\n                    \"default\": \"00000000-0000-0000-0000-000000000000\"\n                }\n            }\n        },\n        \"created_at\": \"2025-06-21T16:29:51.264Z\",\n        \"updated_at\": \"2025-06-21T16:29:51.264Z\"\n    },\n    \"resources\": [\n        {\n            \"id\": \"bdec051b-b9f9-4318-8c02-56ba09f6c35c\",\n            \"endpoint_id\": \"d249ace5-c3e7-4c96-b8ea-496fd37bc5f8\",\n            \"data\": {\n                \"name\": \"Small Concrete Chicken\",\n                \"price\": \"432.00\",\n                \"inStock\": false,\n                \"productId\": \"96d636ca-53a3-479b-8b64-6aca397f46f1\"\n            },\n            \"created_at\": \"2025-06-21T16:29:51.352Z\",\n            \"updated_at\": \"2025-06-21T16:29:51.352Z\"\n        },\n        {\n            \"id\": \"bf3ad557-c32a-4565-b491-18c941465e9e\",\n            \"endpoint_id\": \"d249ace5-c3e7-4c96-b8ea-496fd37bc5f8\",\n            \"data\": {\n                \"name\": \"Practical Granite Ball\",\n                \"price\": \"220.00\",\n                \"inStock\": true,\n                \"productId\": \"9fbb0e30-8a49-4f5c-aef7-b646dd270222\"\n            },\n            \"created_at\": \"2025-06-21T16:29:51.438Z\",\n            \"updated_at\": \"2025-06-21T16:29:51.438Z\"\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Create Orders Endpoint",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"const jsonData = pm.response.json();",
+									"pm.environment.set(\"orderResourceId\", jsonData.resources[0].id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"api_id\": \"{{apiId}}\",\r\n    \"path\": \"/orders\",\r\n    \"methods\": [\r\n        \"GET\",\r\n        \"POST\",\r\n        \"PATCH\"\r\n    ],\r\n    \"description\": \"Manage orders\",\r\n    \"mock_enabled\": true,\r\n    \"mock_count\": 1,\r\n    \"faker_seed\": 789,\r\n    \"schema\": {\r\n        \"type\": \"object\",\r\n        \"properties\": {\r\n            \"orderId\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"uuid\",\r\n                \"faker\": \"string.uuid\",\r\n                \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n            },\r\n            \"userId\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"uuid\",\r\n                \"faker\": \"string.uuid\",\r\n                \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n            },\r\n            \"orderDate\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"date-time\",\r\n                \"faker\": \"date.recent\"\r\n            },\r\n            \"items\": {\r\n                \"type\": \"array\",\r\n                \"items\": {\r\n                    \"type\": \"object\",\r\n                    \"properties\": {\r\n                        \"productId\": {\r\n                            \"type\": \"string\",\r\n                            \"format\": \"uuid\",\r\n                            \"faker\": \"string.uuid\",\r\n                            \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n                        },\r\n                        \"quantity\": {\r\n                            \"type\": \"integer\",\r\n                            \"faker\": \"number.int\",\r\n                            \"minimum\": 1,\r\n                            \"maximum\": 10\r\n                        },\r\n                        \"price\": {\r\n                            \"type\": \"number\",\r\n                            \"faker\": \"commerce.price\",\r\n                            \"minimum\": 0.01,\r\n                            \"maximum\": 1000\r\n                        }\r\n                    },\r\n                    \"required\": [\r\n                        \"productId\",\r\n                        \"quantity\",\r\n                        \"price\"\r\n                    ]\r\n                },\r\n                \"minItems\": 1\r\n            },\r\n            \"totalAmount\": {\r\n                \"type\": \"number\",\r\n                \"faker\": \"commerce.price\",\r\n                \"minimum\": 0.01,\r\n                \"maximum\": 10000\r\n            }\r\n        },\r\n        \"required\": [\r\n            \"orderId\",\r\n            \"userId\",\r\n            \"orderDate\",\r\n            \"items\"\r\n        ]\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/endpoints",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"endpoints"
+							]
+						},
+						"description": "Creates /orders endpoint with complex schema."
+					},
+					"response": [
+						{
+							"name": "Create Orders Endpoint",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"api_id\": \"{{apiId}}\",\r\n    \"path\": \"/orders\",\r\n    \"methods\": [\r\n        \"GET\",\r\n        \"POST\",\r\n        \"PATCH\"\r\n    ],\r\n    \"description\": \"Manage orders\",\r\n    \"mock_enabled\": true,\r\n    \"mock_count\": 1,\r\n    \"faker_seed\": 789,\r\n    \"schema\": {\r\n        \"type\": \"object\",\r\n        \"properties\": {\r\n            \"orderId\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"uuid\",\r\n                \"faker\": \"string.uuid\",\r\n                \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n            },\r\n            \"userId\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"uuid\",\r\n                \"faker\": \"string.uuid\",\r\n                \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n            },\r\n            \"orderDate\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"date-time\",\r\n                \"faker\": \"date.recent\"\r\n            },\r\n            \"items\": {\r\n                \"type\": \"array\",\r\n                \"items\": {\r\n                    \"type\": \"object\",\r\n                    \"properties\": {\r\n                        \"productId\": {\r\n                            \"type\": \"string\",\r\n                            \"format\": \"uuid\",\r\n                            \"faker\": \"string.uuid\",\r\n                            \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n                        },\r\n                        \"quantity\": {\r\n                            \"type\": \"integer\",\r\n                            \"faker\": \"number.int\",\r\n                            \"minimum\": 1,\r\n                            \"maximum\": 10\r\n                        },\r\n                        \"price\": {\r\n                            \"type\": \"number\",\r\n                            \"faker\": \"commerce.price\",\r\n                            \"minimum\": 0.01,\r\n                            \"maximum\": 1000\r\n                        }\r\n                    },\r\n                    \"required\": [\r\n                        \"productId\",\r\n                        \"quantity\",\r\n                        \"price\"\r\n                    ]\r\n                },\r\n                \"minItems\": 1\r\n            },\r\n            \"totalAmount\": {\r\n                \"type\": \"number\",\r\n                \"faker\": \"commerce.price\",\r\n                \"minimum\": 0.01,\r\n                \"maximum\": 10000\r\n            }\r\n        },\r\n        \"required\": [\r\n            \"orderId\",\r\n            \"userId\",\r\n            \"orderDate\",\r\n            \"items\"\r\n        ]\r\n    }\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/endpoints",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"endpoints"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "1573"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"625-ie+FgqB72l/Rvhj6R+AVgPVQhYM\""
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 21 Jun 2025 21:30:06 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"endpoint\": {\n        \"id\": \"45b76f75-c1ed-465c-9656-eb8582699155\",\n        \"api_id\": \"d4f641fc-1974-43fc-bf28-c91d8805fe1a\",\n        \"path\": \"/orders\",\n        \"methods\": [\n            \"GET\",\n            \"POST\",\n            \"PATCH\"\n        ],\n        \"description\": \"Manage orders\",\n        \"mock_enabled\": true,\n        \"mock_count\": 1,\n        \"faker_seed\": 789,\n        \"schema\": {\n            \"type\": \"object\",\n            \"required\": [\n                \"orderId\",\n                \"userId\",\n                \"orderDate\",\n                \"items\"\n            ],\n            \"properties\": {\n                \"items\": {\n                    \"type\": \"array\",\n                    \"items\": {\n                        \"type\": \"object\",\n                        \"required\": [\n                            \"productId\",\n                            \"quantity\",\n                            \"price\"\n                        ],\n                        \"properties\": {\n                            \"price\": {\n                                \"type\": \"number\",\n                                \"faker\": \"commerce.price\",\n                                \"maximum\": 1000,\n                                \"minimum\": 0.01\n                            },\n                            \"quantity\": {\n                                \"type\": \"integer\",\n                                \"faker\": \"number.int\",\n                                \"maximum\": 10,\n                                \"minimum\": 1\n                            },\n                            \"productId\": {\n                                \"type\": \"string\",\n                                \"faker\": \"string.uuid\",\n                                \"format\": \"uuid\",\n                                \"default\": \"00000000-0000-0000-0000-000000000000\"\n                            }\n                        }\n                    },\n                    \"minItems\": 1\n                },\n                \"userId\": {\n                    \"type\": \"string\",\n                    \"faker\": \"string.uuid\",\n                    \"format\": \"uuid\",\n                    \"default\": \"00000000-0000-0000-0000-000000000000\"\n                },\n                \"orderId\": {\n                    \"type\": \"string\",\n                    \"faker\": \"string.uuid\",\n                    \"format\": \"uuid\",\n                    \"default\": \"00000000-0000-0000-0000-000000000000\"\n                },\n                \"orderDate\": {\n                    \"type\": \"string\",\n                    \"faker\": \"date.recent\",\n                    \"format\": \"date-time\"\n                },\n                \"totalAmount\": {\n                    \"type\": \"number\",\n                    \"faker\": \"commerce.price\",\n                    \"maximum\": 10000,\n                    \"minimum\": 0.01\n                }\n            }\n        },\n        \"created_at\": \"2025-06-21T16:30:06.396Z\",\n        \"updated_at\": \"2025-06-21T16:30:06.396Z\"\n    },\n    \"resources\": [\n        {\n            \"id\": \"931cd761-16ff-41ae-bb43-a8ff7cac346f\",\n            \"endpoint_id\": \"45b76f75-c1ed-465c-9656-eb8582699155\",\n            \"data\": {\n                \"items\": null,\n                \"userId\": \"c6df9063-4d7b-474b-8008-8a90e9521fa2\",\n                \"orderId\": \"cd1b00ea-63a3-4406-8386-ae8d7aaeb88d\",\n                \"orderDate\": \"2025-06-21T05:27:15.049Z\",\n                \"totalAmount\": \"431.00\"\n            },\n            \"created_at\": \"2025-06-21T16:30:06.480Z\",\n            \"updated_at\": \"2025-06-21T16:30:06.480Z\"\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Create Reviews Endpoint",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"const jsonData = pm.response.json();",
+									"pm.environment.set(\"reviewResourceId\", jsonData.resources[0].id);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"api_id\": \"{{apiId}}\",\r\n    \"path\": \"/reviews\",\r\n    \"methods\": [\r\n        \"GET\",\r\n        \"POST\"\r\n    ],\r\n    \"description\": \"Manage reviews\",\r\n    \"mock_enabled\": true,\r\n    \"mock_count\": 1,\r\n    \"faker_seed\": 101,\r\n    \"schema\": {\r\n        \"type\": \"object\",\r\n        \"properties\": {\r\n            \"reviewId\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"uuid\",\r\n                \"faker\": \"string.uuid\",\r\n                \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n            },\r\n            \"productId\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"uuid\",\r\n                \"faker\": \"string.uuid\",\r\n                \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n            },\r\n            \"userId\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"uuid\",\r\n                \"faker\": \"string.uuid\",\r\n                \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n            },\r\n            \"rating\": {\r\n                \"type\": \"integer\",\r\n                \"faker\": \"number.int\",\r\n                \"minimum\": 1,\r\n                \"maximum\": 5\r\n            },\r\n            \"comments\": {\r\n                \"type\": \"array\",\r\n                \"items\": {\r\n                    \"type\": \"object\",\r\n                    \"properties\": {\r\n                        \"commentId\": {\r\n                            \"type\": \"string\",\r\n                            \"format\": \"uuid\",\r\n                            \"faker\": \"string.uuid\",\r\n                            \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n                        },\r\n                        \"text\": {\r\n                            \"type\": \"string\",\r\n                            \"faker\": \"lorem.sentence\",\r\n                            \"minLength\": 10,\r\n                            \"maxLength\": 200\r\n                        },\r\n                        \"postedAt\": {\r\n                            \"type\": \"string\",\r\n                            \"format\": \"date-time\",\r\n                            \"faker\": \"date.recent\"\r\n                        }\r\n                    },\r\n                    \"required\": [\r\n                        \"commentId\",\r\n                        \"text\",\r\n                        \"postedAt\"\r\n                    ]\r\n                },\r\n                \"minItems\": 0\r\n            }\r\n        },\r\n        \"required\": [\r\n            \"reviewId\",\r\n            \"productId\",\r\n            \"userId\",\r\n            \"rating\"\r\n        ]\r\n    }\r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/endpoints",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"endpoints"
+							]
+						},
+						"description": "Creates /reviews endpoint with complex schema."
+					},
+					"response": [
+						{
+							"name": "Create Reviews Endpoint",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"api_id\": \"{{apiId}}\",\r\n    \"path\": \"/reviews\",\r\n    \"methods\": [\r\n        \"GET\",\r\n        \"POST\"\r\n    ],\r\n    \"description\": \"Manage reviews\",\r\n    \"mock_enabled\": true,\r\n    \"mock_count\": 1,\r\n    \"faker_seed\": 101,\r\n    \"schema\": {\r\n        \"type\": \"object\",\r\n        \"properties\": {\r\n            \"reviewId\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"uuid\",\r\n                \"faker\": \"string.uuid\",\r\n                \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n            },\r\n            \"productId\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"uuid\",\r\n                \"faker\": \"string.uuid\",\r\n                \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n            },\r\n            \"userId\": {\r\n                \"type\": \"string\",\r\n                \"format\": \"uuid\",\r\n                \"faker\": \"string.uuid\",\r\n                \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n            },\r\n            \"rating\": {\r\n                \"type\": \"integer\",\r\n                \"faker\": \"number.int\",\r\n                \"minimum\": 1,\r\n                \"maximum\": 5\r\n            },\r\n            \"comments\": {\r\n                \"type\": \"array\",\r\n                \"items\": {\r\n                    \"type\": \"object\",\r\n                    \"properties\": {\r\n                        \"commentId\": {\r\n                            \"type\": \"string\",\r\n                            \"format\": \"uuid\",\r\n                            \"faker\": \"string.uuid\",\r\n                            \"default\": \"00000000-0000-0000-0000-000000000000\"\r\n                        },\r\n                        \"text\": {\r\n                            \"type\": \"string\",\r\n                            \"faker\": \"lorem.sentence\",\r\n                            \"minLength\": 10,\r\n                            \"maxLength\": 200\r\n                        },\r\n                        \"postedAt\": {\r\n                            \"type\": \"string\",\r\n                            \"format\": \"date-time\",\r\n                            \"faker\": \"date.recent\"\r\n                        }\r\n                    },\r\n                    \"required\": [\r\n                        \"commentId\",\r\n                        \"text\",\r\n                        \"postedAt\"\r\n                    ]\r\n                },\r\n                \"minItems\": 0\r\n            }\r\n        },\r\n        \"required\": [\r\n            \"reviewId\",\r\n            \"productId\",\r\n            \"userId\",\r\n            \"rating\"\r\n        ]\r\n    }\r\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/endpoints",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"endpoints"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "1616"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"650-FFsJ7pO9WIzhVF8jXPmkTCgGC68\""
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 21 Jun 2025 21:30:28 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"endpoint\": {\n        \"id\": \"1c889a6c-b8f8-431a-a069-333bfe90a396\",\n        \"api_id\": \"d4f641fc-1974-43fc-bf28-c91d8805fe1a\",\n        \"path\": \"/reviews\",\n        \"methods\": [\n            \"GET\",\n            \"POST\"\n        ],\n        \"description\": \"Manage reviews\",\n        \"mock_enabled\": true,\n        \"mock_count\": 1,\n        \"faker_seed\": 101,\n        \"schema\": {\n            \"type\": \"object\",\n            \"required\": [\n                \"reviewId\",\n                \"productId\",\n                \"userId\",\n                \"rating\"\n            ],\n            \"properties\": {\n                \"rating\": {\n                    \"type\": \"integer\",\n                    \"faker\": \"number.int\",\n                    \"maximum\": 5,\n                    \"minimum\": 1\n                },\n                \"userId\": {\n                    \"type\": \"string\",\n                    \"faker\": \"string.uuid\",\n                    \"format\": \"uuid\",\n                    \"default\": \"00000000-0000-0000-0000-000000000000\"\n                },\n                \"comments\": {\n                    \"type\": \"array\",\n                    \"items\": {\n                        \"type\": \"object\",\n                        \"required\": [\n                            \"commentId\",\n                            \"text\",\n                            \"postedAt\"\n                        ],\n                        \"properties\": {\n                            \"text\": {\n                                \"type\": \"string\",\n                                \"faker\": \"lorem.sentence\",\n                                \"maxLength\": 200,\n                                \"minLength\": 10\n                            },\n                            \"postedAt\": {\n                                \"type\": \"string\",\n                                \"faker\": \"date.recent\",\n                                \"format\": \"date-time\"\n                            },\n                            \"commentId\": {\n                                \"type\": \"string\",\n                                \"faker\": \"string.uuid\",\n                                \"format\": \"uuid\",\n                                \"default\": \"00000000-0000-0000-0000-000000000000\"\n                            }\n                        }\n                    },\n                    \"minItems\": 0\n                },\n                \"reviewId\": {\n                    \"type\": \"string\",\n                    \"faker\": \"string.uuid\",\n                    \"format\": \"uuid\",\n                    \"default\": \"00000000-0000-0000-0000-000000000000\"\n                },\n                \"productId\": {\n                    \"type\": \"string\",\n                    \"faker\": \"string.uuid\",\n                    \"format\": \"uuid\",\n                    \"default\": \"00000000-0000-0000-0000-000000000000\"\n                }\n            }\n        },\n        \"created_at\": \"2025-06-21T16:30:28.410Z\",\n        \"updated_at\": \"2025-06-21T16:30:28.410Z\"\n    },\n    \"resources\": [\n        {\n            \"id\": \"42af254b-5e45-4649-868d-a90471d6d6b0\",\n            \"endpoint_id\": \"1c889a6c-b8f8-431a-a069-333bfe90a396\",\n            \"data\": {\n                \"rating\": 6237559629807616,\n                \"userId\": \"07194630-3268-4a9e-9f57-76e5a20aa329\",\n                \"comments\": null,\n                \"reviewId\": \"c17a9bb5-f2c9-44c7-910a-2abd3cf492e7\",\n                \"productId\": \"4ea9e9ab-b7e2-4bca-9685-15d4c33536b5\"\n            },\n            \"created_at\": \"2025-06-21T16:30:28.494Z\",\n            \"updated_at\": \"2025-06-21T16:30:28.494Z\"\n        }\n    ]\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Mock Endpoints",
+			"item": [
+				{
+					"name": "Get All Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response is an array\", function () {",
+									"    pm.expect(pm.response.json()).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/ibrahim/myapi/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"ibrahim",
+								"myapi",
+								"users"
+							]
+						},
+						"description": "Fetches all user profiles."
+					},
+					"response": [
+						{
+							"name": "Get All Users",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/ibrahim/myapi/users",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"ibrahim",
+										"myapi",
+										"users"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "350"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"15e-ugyncqTKbZjVvqVXYNrXmg8SrIM\""
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 21 Jun 2025 21:31:55 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"id\": \"38a4824d-45a7-4c5a-abd9-ff67cfe0fde0\",\n        \"email\": \"Vicky.Roberts@hotmail.com\",\n        \"profile\": {\n            \"age\": 2834954270539776,\n            \"fullName\": \"Winifred Corkery\"\n        },\n        \"username\": \"Hilton.Gottlieb\"\n    },\n    {\n        \"id\": \"558c0f29-3c9a-40b1-a017-781e8808eece\",\n        \"email\": \"Shanelle_Hartmann73@gmail.com\",\n        \"profile\": {\n            \"age\": 4452431031173120,\n            \"fullName\": \"Mr. Angel Marquardt\"\n        },\n        \"username\": \"Hal72\"\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "Create User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"data\":{\"id\":\"123e4567-e89b-12d3-a456-426614174000\",\"username\":\"newuser\",\"email\":\"newuser@example.com\",\"profile\":{\"fullName\":\"New User\",\"age\":28}}}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ibrahim/myapi/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"ibrahim",
+								"myapi",
+								"users"
+							]
+						},
+						"description": "Creates a new user profile."
+					},
+					"response": [
+						{
+							"name": "Create User",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"data\":{\"id\":\"123e4567-e89b-12d3-a456-426614174000\",\"username\":\"newuser\",\"email\":\"newuser@example.com\",\"profile\":{\"fullName\":\"New User\",\"age\":28}}}"
+								},
+								"url": {
+									"raw": "http://localhost:3000/ibrahim/myapi/users",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"ibrahim",
+										"myapi",
+										"users"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "139"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"8b-PS7UOA3YWd8HcpCU25DJG4pBkO4\""
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 21 Jun 2025 21:52:50 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"email\": \"newuser@example.com\",\n    \"profile\": {\n        \"age\": 28,\n        \"fullName\": \"New User\"\n    },\n    \"username\": \"newuser\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Update User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI3MDc4ZWE0Ni0wM2VlLTRmODMtYjU4Yy05ODA2MTkwN2QyZTIiLCJpYXQiOjE3NTA4NjU4NjIsImV4cCI6MTc1MDk1MjI2Mn0.lP4vg5qOEHDbmTpCIxaI-trRCbL9fs6vSIICq2spBds\"",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"data\":{\"id\":\"123e4567-e89b-12d3-a456-426614174000\",\"username\":\"newuser\",\"email\":\"newuser@example.com\",\"profile\":{\"fullName\":\"New User\",\"age\":20}}}"
+						},
+						"url": {
+							"raw": "http://mock-api-generator.onrender.com/ibrahim/myapi/users/833037e9-ec6e-4aa5-addb-d87d93cf694f",
+							"protocol": "http",
+							"host": [
+								"mock-api-generator",
+								"onrender",
+								"com"
+							],
+							"path": [
+								"ibrahim",
+								"myapi",
+								"users",
+								"833037e9-ec6e-4aa5-addb-d87d93cf694f"
+							]
+						},
+						"description": "Creates a new user profile."
+					},
+					"response": [
+						{
+							"name": "Create User",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"data\":{\"id\":\"123e4567-e89b-12d3-a456-426614174000\",\"username\":\"newuser\",\"email\":\"newuser@example.com\",\"profile\":{\"fullName\":\"New User\",\"age\":28}}}"
+								},
+								"url": {
+									"raw": "http://localhost:3000/ibrahim/myapi/users",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"ibrahim",
+										"myapi",
+										"users"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "139"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"8b-PS7UOA3YWd8HcpCU25DJG4pBkO4\""
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 21 Jun 2025 21:52:50 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"email\": \"newuser@example.com\",\n    \"profile\": {\n        \"age\": 28,\n        \"fullName\": \"New User\"\n    },\n    \"username\": \"newuser\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Get All Products",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response is an array\", function () {",
+									"    pm.expect(pm.response.json()).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/ibrahim/myapi/products",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"ibrahim",
+								"myapi",
+								"products"
+							]
+						},
+						"description": "Fetches all products."
+					},
+					"response": [
+						{
+							"name": "Get All Products",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/ibrahim/myapi/products",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"ibrahim",
+										"myapi",
+										"products"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "324"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"144-cFO3SZwW2F/tobhfdsYKlqmhaeQ\""
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 21 Jun 2025 21:58:07 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"name\": \"Practical Granite Ball\",\n        \"price\": \"220.00\",\n        \"inStock\": true,\n        \"productId\": \"9fbb0e30-8a49-4f5c-aef7-b646dd270222\",\n        \"id\": \"bf3ad557-c32a-4565-b491-18c941465e9e\"\n    },\n    {\n        \"name\": \"Small Concrete Chicken\",\n        \"price\": \"432.00\",\n        \"inStock\": false,\n        \"productId\": \"96d636ca-53a3-479b-8b64-6aca397f46f1\",\n        \"id\": \"bdec051b-b9f9-4318-8c02-56ba09f6c35c\"\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "Create Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"data\":{\"orderId\":\"123e4567-e89b-12d3-a456-426614174002\",\"userId\":\"123e4567-e89b-12d3-a456-426614174000\",\"orderDate\":\"2025-06-22T12:00:00Z\",\"items\":[{\"productId\":\"123e4567-e89b-12d3-a456-426614174001\",\"quantity\":2,\"price\":99.99}],\"totalAmount\":199.98}}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/ibrahim/myapi/orders",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"ibrahim",
+								"myapi",
+								"orders"
+							]
+						},
+						"description": "Creates a new order."
+					},
+					"response": [
+						{
+							"name": "Create Order",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"data\": {\r\n        \"orderId\": \"123e4567-e89b-12d3-a456-426614174002\",\r\n        \"userId\": \"123e4567-e89b-12d3-a456-426614174000\",\r\n        \"orderDate\": \"2025-06-22T12:00:00Z\",\r\n        \"items\": [\r\n            {\r\n                \"productId\": \"123e4567-e89b-12d3-a456-426614174001\",\r\n                \"quantity\": 2,\r\n                \"price\": 99.99\r\n            }\r\n        ],\r\n        \"totalAmount\": 199.98\r\n    }\r\n}"
+								},
+								"url": {
+									"raw": "http://localhost:3000/ibrahim/myapi/orders",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"ibrahim",
+										"myapi",
+										"orders"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "244"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"f4-Y8ZNpgUDil4bhTpU1KCHdUMklYQ\""
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 21 Jun 2025 22:01:19 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"items\": [\n        {\n            \"price\": 99.99,\n            \"quantity\": 2,\n            \"productId\": \"123e4567-e89b-12d3-a456-426614174001\"\n        }\n    ],\n    \"userId\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"orderId\": \"123e4567-e89b-12d3-a456-426614174002\",\n    \"orderDate\": \"2025-06-22T12:00:00Z\",\n    \"totalAmount\": 199.98\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Reviews By Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Response is an array\", function () {",
+									"    pm.expect(pm.response.json()).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/ibrahim/myapi/reviews/42af254b-5e45-4649-868d-a90471d6d6b0",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"ibrahim",
+								"myapi",
+								"reviews",
+								"42af254b-5e45-4649-868d-a90471d6d6b0"
+							]
+						},
+						"description": "Fetches all reviews."
+					},
+					"response": [
+						{
+							"name": "Get Reviews By Id",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/ibrahim/myapi/reviews/42af254b-5e45-4649-868d-a90471d6d6b0",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"ibrahim",
+										"myapi",
+										"reviews",
+										"42af254b-5e45-4649-868d-a90471d6d6b0"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "236"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"ec-zodq6wp5csEf6uMWya9VsxA69eU\""
+								},
+								{
+									"key": "Date",
+									"value": "Sat, 21 Jun 2025 21:58:54 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"rating\": 6237559629807616,\n    \"userId\": \"07194630-3268-4a9e-9f57-76e5a20aa329\",\n    \"comments\": null,\n    \"reviewId\": \"c17a9bb5-f2c9-44c7-910a-2abd3cf492e7\",\n    \"productId\": \"4ea9e9ab-b7e2-4bca-9685-15d4c33536b5\",\n    \"id\": \"42af254b-5e45-4649-868d-a90471d6d6b0\"\n}"
+						}
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000"
+		}
+	]
+}
