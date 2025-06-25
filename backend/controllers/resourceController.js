@@ -38,14 +38,14 @@ class ResourceController {
             }
           } else if (prop.type === 'object' && prop.properties) {
             mockItem[key] = ResourceController.generateMockData(prop, 1, null)[0]; 
-          } else if (schema.type === 'array' && schema.items) {
+          } else if (prop.type === 'array' && prop.items) {
             let itemCount = 1; // default
-            if (schema.count !== undefined) {
-              itemCount = schema.count;
-            } else if (schema.minItems !== undefined && schema.maxItems !== undefined) {
-              itemCount = faker.number.int({ min: schema.minItems, max: schema.maxItems });
-            } else if (schema.minItems !== undefined) {
-              itemCount = schema.minItems;
+            if (prop.count !== undefined) {
+              itemCount = prop.count;
+            } else if (prop.minItems !== undefined && prop.maxItems !== undefined) {
+              itemCount = faker.number.int({ min: prop.minItems, max: prop.maxItems });
+            } else if (prop.minItems !== undefined) {
+              itemCount = prop.minItems;
             }
             // Generate array items
             mockItem[key] = ResourceController.generateMockData(schema.items, itemCount, seed ? seed + i : null);
