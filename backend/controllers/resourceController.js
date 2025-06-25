@@ -15,7 +15,24 @@ class ResourceController {
           if (prop.faker) {
             const [module, method] = prop.faker.split('.');
             if (faker[module] && faker[module][method]) {
-              mockItem[key] = faker[module][method]();
+              const fakerParams = {};
+              // Numeric parameters
+              if (prop.min !== undefined) fakerParams.min = prop.min;
+              if (prop.max !== undefined) fakerParams.max = prop.max;
+              // String parameters
+              if (prop.length !== undefined) fakerParams.length = prop.length;
+if (prop.prefix !== undefined) fakerParams.prefix = prop.prefix; //e.g. prefix for strings
+              if (prop.suffix !== undefined) fakerParams.suffix = prop.suffix; //e.g. suffix for strings
+              if (prop.minLength !== undefined) fakerParams.minLength = prop.minLength;
+              if (prop.maxLength !== undefined) fakerParams.maxLength = prop.maxLength;
+              if (prop.casing !== undefined) fakerParams.casing = prop.casing;  //e.g. upper, lower
+              // Array parameter
+              if (prop.count !== undefined) fakerParams.count = prop.count; // //Number of elements
+              
+              // Call the Faker method with parameters if provided
+              mockItem[key] = Object.keys(fakerParams).length
+                ? faker[module][method](fakerParams)
+                : faker[module][method]();
             } else {
               mockItem[key] = prop.default || null;
             }
