@@ -26,8 +26,6 @@ class ResourceController {
               if (prop.minLength !== undefined) fakerParams.minLength = prop.minLength;
               if (prop.maxLength !== undefined) fakerParams.maxLength = prop.maxLength;
               if (prop.casing !== undefined) fakerParams.casing = prop.casing;  //e.g. upper, lower
-              // Array parameter
-              if (prop.count !== undefined) fakerParams.count = prop.count; // //Number of elements
               
               // Call the Faker method with parameters if provided
               mockItem[key] = Object.keys(fakerParams).length
@@ -47,10 +45,8 @@ class ResourceController {
             } else if (prop.minItems !== undefined) {
               itemCount = prop.minItems;
             }
-            // Generate array items
-            mockItem[key] = ResourceController.generateMockData(schema.items, itemCount, seed ? seed + i : null);
-          }
-          else {
+            mockItem[key] = ResourceController.generateMockData(prop.items, itemCount, seed ? seed + i : null);
+            } else {
             mockItem[key] = prop.default || null;
           }
         });
