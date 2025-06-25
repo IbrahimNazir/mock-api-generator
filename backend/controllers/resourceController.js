@@ -4,11 +4,11 @@ const Resource = require('../models/Resource');
 
 class ResourceController {
   static generateMockData(schema, count, seed) {
-    if (seed) {
-      faker.seed(seed); // Set seed for reproducible results
-    }
     const data = [];
     for (let i = 0; i < count; i++) {
+      if (seed) {
+        faker.seed(seed+i); // Set seed for reproducible results
+      }
       const mockItem = {};
       if (schema.type === 'object' && schema.properties) {
         Object.entries(schema.properties).forEach(([key, prop]) => {
@@ -20,7 +20,7 @@ class ResourceController {
               mockItem[key] = prop.default || null;
             }
           } else if (prop.type === 'object' && prop.properties) {
-            mockItem[key] = ResourceController.generateMockData(prop, 1, seed)[0];
+            mockItem[key] = ResourceController.generateMockData(prop, 1, seed+1)[0];
           } else {
             mockItem[key] = prop.default || null;
           }
