@@ -95,7 +95,6 @@ class ResourceController {
         return res.status(404).json({ error: 'Endpoint not found' });
       }
       const resource = await Resource.create({ endpoint_id, data });
-      console.log('resource: ',resource)
       res.status(201).json(resource);
     } catch (error) {
       res.status(400).json({ error: error.message });

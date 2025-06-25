@@ -48,7 +48,6 @@ class EndpointController {
 
   static async createEndpoint(req, res) {
     try {
-        console.log(req.body);
       const { api_id, path, methods, description, mock_enabled, mock_count, faker_seed, schema } = req.body;
       if (!api_id || !path || !methods) {
         return res.status(400).json({ error: 'API ID, path, and methods are required' });
@@ -57,7 +56,6 @@ class EndpointController {
       if (schema) {
         EndpointController.validateSchema(schema);
       }
-      console.log('Creating endpoint with schema:', schema);
       const api = await Api.findById(api_id);
       if (!api) {
         return res.status(404).json({ error: 'API not found' });
