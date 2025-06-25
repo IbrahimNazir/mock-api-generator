@@ -38,10 +38,6 @@ class ResourceController {
             }
           } else if (prop.type === 'object' && prop.properties) {
             mockItem[key] = ResourceController.generateMockData(prop, 1, null)[0]; 
-          } else {
-            mockItem[key] = prop.default || null;
-          }
-        });
       } else if (schema.type === 'array' && schema.items) {
         let itemCount = 1; // default
         if (schema.count !== undefined) {
@@ -53,7 +49,11 @@ class ResourceController {
         }
         // Generate array items
         mockItem[key] = ResourceController.generateMockData(schema.items, itemCount, seed ? seed + i : null);
-        data.push(mockItem);
+          }
+          else {
+            mockItem[key] = prop.default || null;
+          }
+        });
       }
       data.push(mockItem);
     }
