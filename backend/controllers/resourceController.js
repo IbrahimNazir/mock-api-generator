@@ -5,7 +5,7 @@ const Resource = require('../models/Resource');
 class ResourceController {
   static generateMockData(schema, count, seed) {
     if (seed) {
-      faker.seed(); // Set seed for reproducible results
+      faker.seed(seed); // Set seed for reproducible results
     }
     const data = [];
     for (let i = 0; i < count; i++) {
