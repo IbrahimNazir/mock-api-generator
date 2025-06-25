@@ -37,11 +37,23 @@ if (prop.prefix !== undefined) fakerParams.prefix = prop.prefix; //e.g. prefix f
               mockItem[key] = prop.default || null;
             }
           } else if (prop.type === 'object' && prop.properties) {
-            mockItem[key] = ResourceController.generateMockData(prop, 1, seed+1)[0];
+            mockItem[key] = ResourceController.generateMockData(prop, 1, null)[0]; 
           } else {
             mockItem[key] = prop.default || null;
           }
         });
+      } else if (schema.type === 'array' && schema.items) {
+        let itemCount = 1; // default
+        if (schema.count !== undefined) {
+          itemCount = schema.count;
+        } else if (schema.minItems !== undefined && schema.maxItems !== undefined) {
+          itemCount = faker.number.int({ min: schema.minItems, max: schema.maxItems });
+        } else if (schema.minItems !== undefined) {
+          itemCount = schema.minItems;
+        }
+        // Generate array items
+        const arrayData = ResourceController.generateMockData(schema.items, itemCount, seed ? seed + i : null);
+        data.push(arrayData);
       }
       data.push(mockItem);
     }
