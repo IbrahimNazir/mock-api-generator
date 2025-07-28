@@ -1,6 +1,8 @@
 const { query } = require('../db/db');
+const auth = require('../middleware/auth');
 const Resource = require('../models/Resource');
 const Ajv = require('ajv');
+const { filterData } = require('../utils/filterData');
 const ajv = new Ajv({ allErrors: true });
 
 class MockController {
@@ -27,9 +29,12 @@ class MockController {
     return merged;
   }
 
-  static async getAllResources(req, res) {
+  static async getAllResources(req, res, next) {
     try {
       const { username, apiPath, endpointPath } = req.params;
+
+      const { page, limit} = req.query;
+      const isPagination = page || limit;
       // Resolve endpoint
       const endpointQuery = `
         SELECT e.*, a.user_id, a.is_public
@@ -43,21 +48,37 @@ class MockController {
       `;
       const endpointResult = await query(endpointQuery, [username, `/${apiPath}`, `/${endpointPath}`]);
       const endpoint = endpointResult.rows[0];
+      console.log("endpoint: ", endpoint)
       if (!endpoint) {
         return res.status(404).json({ error: 'Endpoint not found or GET method not supported' });
       }
 
+      
+
       // Check access
-      if (!endpoint.is_public && (req.user?.id !== endpoint.user_id)) {
-        return res.status(403).json({ error: 'Unauthorized' });
+      if (!endpoint.is_public ) {
+        console.log("I am private")
+        auth(req, res, next);
+        if (req.user?.id !== endpoint.user_id){
+          return res.status(403).json({ error: 'Unauthorized' });
+        }
       }
 
       // Fetch resources
-      const resources = await Resource.findByEndpointId(endpoint.id);
-      const data = resources.map(resource => {return {  ...resource.data,id: resource.id}}); // Include resource ID in response
-      res.json(data);
+      const resources = await Resource.findByEndpointId(endpoint.id, page, limit);
+      var data = resources.map(resource => { return {  ...resource.data, id: resource.id }}); // Include resource ID in response
+      
+      // Apply filtering if query parameters are present
+      if (Object.keys(req.query).length > 0) {
+        data = filterData(req, res, data);
+      }
+      if (isPagination){
+        const total = await Resource.findTotalCountByEndpointId(endpoint.id);
+        return res.json({data, page: parseInt(page) || 1, limit: parseInt(limit) || 10, total: parseInt(total)});
+      }
+      return res.json(data);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: error.message });
     }
   }
 
@@ -84,8 +105,11 @@ class MockController {
       }
 
       // Check access
-      if (!endpoint.is_public && ( req.user?.id !== endpoint.user_id)) {
-        return res.status(403).json({ error: 'Unauthorized' });
+      if (!endpoint.is_public ) {
+        auth(req, res, next);
+        if (req.user?.id !== endpoint.user_id){
+          return res.status(403).json({ error: 'Unauthorized' });
+        }
       }
 
       // Fetch resource
@@ -103,11 +127,9 @@ class MockController {
   static async createResource(req, res) {
     try {
       const { username, apiPath, endpointPath } = req.params;
-      const { data } = req.body;
-      console.log('Creating resource with data:', data);
-
+      const data = req.body;
       if (!data) {
-        return res.status(400).json({ error: 'Data is required' });
+        return res.status(400).json({ error: 'Request body is required' });
       }
 
       // Resolve endpoint
@@ -122,7 +144,6 @@ class MockController {
           AND 'POST' = ANY(e.methods)
       `;
       const endpointResult = await query(endpointQuery, [username, `/${apiPath}`, `/${endpointPath}`]);
-      console.log('endpointResult: ',endpointResult);
       const endpoint = endpointResult.rows[0];
 
       if (!endpoint) {
@@ -137,7 +158,6 @@ class MockController {
       // if (endpoint.schema) {
       //   await MockController.validateSchema(endpoint.schema, data);
       // }
-      console.log("Creating resource for endpoint:", endpoint.id);
       // Create resource
       const resource = await Resource.create({ endpoint_id: endpoint.id, data });
       res.status(201).json({ ...resource.data, id: resource.id});
@@ -149,7 +169,7 @@ class MockController {
   static async updateResource(req, res) {
     try {
       const { username, apiPath, endpointPath, resourceId } = req.params;
-      const { data } = req.body;
+      const data = req.body;
 
       if (!data) {
         return res.status(400).json({ error: 'Data is required' });
@@ -174,8 +194,11 @@ class MockController {
       }
 
       // Check access (only owner can update)
-      if (!endpoint.is_public && (req.user?.id !== endpoint.user_id)) {
-        return res.status(403).json({ error: 'Unauthorized' });
+      if (!endpoint.is_public ) {
+        auth(req, res, next);
+        if (req.user?.id !== endpoint.user_id){
+          return res.status(403).json({ error: 'Unauthorized' });
+        }
       }
 
       // Fetch resource
@@ -200,7 +223,7 @@ class MockController {
   static async patchResource(req, res) {
     try {
       const { username, apiPath, endpointPath, resourceId } = req.params;
-      const { data } = req.body;
+      const data = req.body;
 
       if (!data) {
         return res.status(400).json({ error: 'Data is required' });
@@ -224,9 +247,12 @@ class MockController {
         return res.status(404).json({ error: 'Endpoint not found or PATCH method not supported' });
       }
 
-      // // Check access (only owner can update)
-      if (!endpoint.is_public && (req.user?.id !== endpoint.user_id)) {
-        return res.status(403).json({ error: 'Unauthorized' });
+      // Check access (only owner can update)
+      if (!endpoint.is_public ) {
+        auth(req, res, next);
+        if (req.user?.id !== endpoint.user_id){
+          return res.status(403).json({ error: 'Unauthorized' });
+        }
       }
 
       // Fetch resource
@@ -274,9 +300,12 @@ class MockController {
       }
 
       // Check access (only owner can update)
-      // if (!req.user || req.user.id !== endpoint.user_id) {
-      //   return res.status(403).json({ error: 'Unauthorized' });
-      // }
+      if (!endpoint.is_public ) {
+        auth(req, res, next);
+        if (req.user?.id !== endpoint.user_id){
+          return res.status(403).json({ error: 'Unauthorized' });
+        }
+      }
 
       // Fetch resource
       const resource = await Resource.findById(resourceId);

@@ -4,6 +4,7 @@ const mockRoutes = require('./routes/mockRoutes');
 const ServerPinger = require('./utils/serverPingerUtils');
 const morgan = require('morgan');
 const cors = require('cors');
+require("dotenv").config();
 
 const app = express();
 
@@ -19,8 +20,8 @@ app.use('/api/v1', routes);
 app.use('', mockRoutes);
 
 const pinger = new ServerPinger({
-  url: 'https://mock-api-generator.onrender.com/api/v1/ping',
-  intervalMinutes: 14
+  url: (process.env.PING_URL || 'http://localhost:3000') + '/api/v1/ping',
+  intervalMinutes: process.env.PING_INTERVAL || 5
 });
 
 pinger.start();

@@ -1,15 +1,15 @@
 const { query } = require('../db/db');
-const { v4: uuidv4 } = require('uuid');
+// const { v4: uuidv4 } = require('uuid');
 
 class Api {
   static async create({ user_id, name, version, description, base_path, is_public }) {
-    const id = uuidv4();
+    // const id = uuidv4();
     const text = `
-      INSERT INTO apis (id, user_id, name, version, description, base_path, is_public, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+      INSERT INTO apis (user_id, name, version, description, base_path, is_public, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
       RETURNING *
     `;
-    const values = [id, user_id, name, version, description, base_path, is_public ?? true];
+    const values = [user_id, name, version, description, base_path, is_public ?? true];
     const result = await query(text, values);
     return result.rows[0];
   }

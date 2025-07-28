@@ -1,20 +1,20 @@
 const db = require('../db/db');
-const { v4: uuidv4 } = require('uuid');
+// const { v4: uuidv4 } = require('uuid');
 const { hashPassword } = require('../utils/passwordUtils');
 
 class User {
   static async create(userData) {
     const { username, email, password, role = 'user' } = userData;
-    const id = uuidv4();
+    // const id = uuidv4();
     const hashedPassword = await hashPassword(password);
     
     const query = `
-      INSERT INTO users (id, username, email, password, role, is_active, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, true, NOW(), NOW())
+      INSERT INTO users (username, email, password, role, is_active, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, true, NOW(), NOW())
       RETURNING id, username, email, role, is_active, created_at
     `;
     
-    const values = [id, username, email, hashedPassword, role];
+    const values = [username, email, hashedPassword, role];
     const result = await db.query(query, values);
     
     return result.rows[0];

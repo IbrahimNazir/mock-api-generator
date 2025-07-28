@@ -1,15 +1,15 @@
 const { query } = require('../db/db');
-const { v4: uuidv4 } = require('uuid');
+// const { v4: uuidv4 } = require('uuid');
 
 class Resource {
   static async create({ endpoint_id, data }) {
-    const id = uuidv4();
+    // const id = uuidv4();
     const text = `
-      INSERT INTO resources (id, endpoint_id, data, created_at, updated_at)
-      VALUES ($1, $2, $3, NOW(), NOW())
+      INSERT INTO resources (endpoint_id, data, created_at, updated_at)
+      VALUES ($1, $2, NOW(), NOW())
       RETURNING *
     `;
-    const values = [id, endpoint_id, JSON.stringify(data)];
+    const values = [endpoint_id, JSON.stringify(data)];
     const result = await query(text, values);
     return result.rows[0];
   }
@@ -20,10 +20,19 @@ class Resource {
     return result.rows[0];
   }
 
-  static async findByEndpointId(endpoint_id) {
-    const text = 'SELECT * FROM resources WHERE endpoint_id = $1 ORDER BY created_at DESC';
-    const result = await query(text, [endpoint_id]);
+  static async findByEndpointId(endpoint_id, page, limit) {
+    const text = `SELECT * FROM resources WHERE endpoint_id = $1 ORDER BY created_at DESC${ page || limit  ? ' LIMIT $2 OFFSET $3' : ''}`;
+    const limits = (page || limit) ? [limit || 10, (page - 1) * limit || 0] : [];
+    console.log("text: ", text, "limits: ",limits)
+    const result = await query(text, [endpoint_id, ...limits]);
+    console.log("results :", result.rows)
     return result.rows;
+  }
+  
+  static async findTotalCountByEndpointId(endpoint_id) {
+    const text = `SELECT COUNT(Id) FROM resources WHERE endpoint_id = $1`;
+    const result = await query(text, [endpoint_id]);
+    return result.rows[0].count;
   }
 
   static async update(id, { data }) {
@@ -43,6 +52,12 @@ class Resource {
     const text = 'DELETE FROM resources WHERE id = $1 RETURNING *';
     const result = await query(text, [id]);
     return result.rows[0];
+  }
+
+  static async deleteByEndpointId(endpoint_id) {
+    const text = 'DELETE FROM resources WHERE endpoint_id = $1 RETURNING id';
+    const result = await query(text, [endpoint_id]);
+    return result.rows;
   }
 }
 

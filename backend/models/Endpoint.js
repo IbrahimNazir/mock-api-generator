@@ -1,16 +1,15 @@
 const { query } = require('../db/db');
-const { v4: uuidv4 } = require('uuid');
+// const { v4: uuidv4 } = require('uuid');
 
 class Endpoint {
   static async create({ api_id, path, methods, description, mock_enabled, mock_count, faker_seed, schema }) {
-    const id = uuidv4();
+    // const id = uuidv4();
     const text = `
-      INSERT INTO endpoints (id, api_id, path, methods, description, mock_enabled, mock_count, faker_seed, schema, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
+      INSERT INTO endpoints (api_id, path, methods, description, mock_enabled, mock_count, faker_seed, schema, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
       RETURNING *
     `;
     const values = [
-      id,
       api_id,
       path,
       methods,
