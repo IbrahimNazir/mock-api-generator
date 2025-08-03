@@ -53,14 +53,14 @@ class EndpointRelationshipsController {
 
             // Recreate resources for endpoint1
             if (endpoint1.mock_enabled && endpoint1.mock_count > 0 && endpoint1.schema) {
-                const mockData1 = ResourceController.generateMockData(endpoint1.schema, endpoint1.mock_count, endpoint1.faker_seed);
+                const mockData1 = await ResourceController.generateMockData(endpoint1.schema, endpoint1.mock_count, endpoint1.faker_seed);
                 var fakerSeed = endpoint2.faker_seed;
                 for (let index = 0; index < mockData1.length; index++) {
                     const data1 = mockData1[index];
                     // Recreate resources for endpoint2 
                     let resources2 = [];
                     if (endpoint2.mock_enabled && endpoint2.mock_count > 0 && endpoint2.schema) {
-                        const mockData2 = ResourceController.generateMockData(endpoint2.schema, endpoint2.mock_count, fakerSeed);
+                        const mockData2 = await ResourceController.generateMockData(endpoint2.schema, endpoint2.mock_count, fakerSeed);
                         fakerSeed += endpoint2.mock_count;
                         resources2 = mockData2;
                         

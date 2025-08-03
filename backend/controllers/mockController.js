@@ -48,7 +48,7 @@ class MockController {
       `;
       const endpointResult = await query(endpointQuery, [username, `/${apiPath}`, `/${endpointPath}`]);
       const endpoint = endpointResult.rows[0];
-      console.log("endpoint: ", endpoint)
+      // console.log("endpoint: ", endpoint)
       if (!endpoint) {
         return res.status(404).json({ error: 'Endpoint not found or GET method not supported' });
       }
@@ -57,7 +57,7 @@ class MockController {
 
       // Check access
       if (!endpoint.is_public ) {
-        console.log("I am private")
+        // console.log("I am private")
         auth(req, res, next);
         if (req.user?.id !== endpoint.user_id){
           return res.status(403).json({ error: 'Unauthorized' });
@@ -66,6 +66,7 @@ class MockController {
 
       // Fetch resources
       const resources = await Resource.findByEndpointId(endpoint.id, page, limit);
+      // console.log("resources: ",resources)
       var data = resources.map(resource => { return {  ...resource.data, id: resource.id }}); // Include resource ID in response
       
       // Apply filtering if query parameters are present

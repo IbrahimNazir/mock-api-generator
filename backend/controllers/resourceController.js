@@ -1,89 +1,201 @@
-const { faker } = require('@faker-js/faker');
+const { faker, ar } = require('@faker-js/faker');
 const Endpoint = require('../models/Endpoint');
 const Resource = require('../models/Resource');
 
 class ResourceController {
-  static generateMockData(schema, count, seed) {
-    const data = [];
-    for (let i = 0; i < count; i++) {
-      if (seed) {
-        faker.seed(seed+i); // Set seed for reproducible results
-      }
-      const mockItem = {};
+    static getArrayOfMapsOfRelationshipFieldNEndpointIdFromSchema(schema){
+      const relationshipIds = [];
       if (schema.type === 'object' && schema.properties) {
         Object.entries(schema.properties).forEach(([key, prop]) => {
-          if (prop.faker) {
-            const [module, method] = prop.faker.split('.');
-            if (faker[module] && faker[module][method]) {
-              const fakerParams = {};
-              // Numeric parameters
-              if (prop.min !== undefined) fakerParams.min = prop.min;
-              if (prop.max !== undefined) fakerParams.max = prop.max;
-              // String parameters
-              if (prop.length !== undefined) fakerParams.length = prop.length;
-              if (prop.prefix !== undefined) fakerParams.prefix = prop.prefix; //e.g. prefix for strings
-              if (prop.suffix !== undefined) fakerParams.suffix = prop.suffix; //e.g. suffix for strings
-              if (prop.minLength !== undefined) fakerParams.minLength = prop.minLength;
-              if (prop.maxLength !== undefined) fakerParams.maxLength = prop.maxLength;
-              if (prop.casing !== undefined) fakerParams.casing = prop.casing;  //e.g. upper, lower
-              
-              // Call the Faker method with parameters if provided
-              mockItem[key] = Object.keys(fakerParams).length
-                ? faker[module][method](fakerParams)
-                : faker[module][method]();
-            } else {
+          if (prop.type === 'relationship'){
+            const relationship = {};
+            relationship.field = key;
+            relationship.endpointId = prop.endpointId;
+            relationship.isMasterDetail = prop.masterDetail || true;
+            relationshipIds.push(relationship);
+          } else if (prop.type === 'object' && prop.properties){
+            relationshipIds.push(...ResourceController.getArrayOfMapsOfRelationshipFieldNEndpointIdFromSchema(prop));
+          } else if (prop.type === 'array' && prop.items){
+            relationshipIds.push(...ResourceController.getArrayOfMapsOfRelationshipFieldNEndpointIdFromSchema(prop.items));
+          }
+        })
+      }
+      return relationshipIds;
+    }
+    static getRandomInteger(max) {
+      return Math.trunc(Math.random() * max);
+    }
+    static async generateMockData(schema, count, seed) {
+      console.log("generateMockData")
+      const data = [];
+      const arrayOfMapsOfRelationshipFieldNEndpointId = ResourceController.getArrayOfMapsOfRelationshipFieldNEndpointIdFromSchema(schema);
+      console.log("arrayOfMapsOfRelationshipFieldNEndpointId: ",arrayOfMapsOfRelationshipFieldNEndpointId)
+      const mapOfRelationshipFieldNEndpoints = {};
+      var maxCountOfParentResourceIds = 0;
+      for (const mapOfRelationshipFieldNEndpointId of arrayOfMapsOfRelationshipFieldNEndpointId){
+        console.log("mapOfRelationshipFieldNEndpointId.endpointId", mapOfRelationshipFieldNEndpointId.endpointId)
+        const resourceIdsByEndpoints = await Resource.findIdsByEndpointId(mapOfRelationshipFieldNEndpointId.endpointId);
+        console.log("resourceIdsByEndpoints: ",resourceIdsByEndpoints)
+        const resourceIds = resourceIdsByEndpoints.map(resource => resource.id);
+        mapOfRelationshipFieldNEndpoints[mapOfRelationshipFieldNEndpointId.field] = resourceIds;
+        if (resourceIds.length > maxCountOfParentResourceIds) {
+          maxCountOfParentResourceIds = resourceIds.length;
+        }
+      }
+      
+      if (maxCountOfParentResourceIds > 0) count *= maxCountOfParentResourceIds;
+      for (let i = 0; i < count; i++) {
+        if (seed) {
+          faker.seed(seed+i); // Set seed for reproducible results
+        }
+        const mockItem = {};
+        var parentResourceIds = '';
+        if (schema.type === 'object' && schema.properties) {
+          // Object.entries(schema.properties).forEach(async ([key, prop]) => {
+          for (const [key, prop] of Object.entries(schema.properties)) {
+            console.log("prop.type: ",prop.type)
+            if (prop.faker) {
+              const [module, method] = prop.faker.split('.');
+              if (faker[module] && faker[module][method]) {
+                const fakerParams = {};
+                // Numeric parameters
+                if (prop.min !== undefined) fakerParams.min = prop.min;
+                if (prop.max !== undefined) fakerParams.max = prop.max;
+                // String parameters
+                if (prop.length !== undefined) fakerParams.length = prop.length;
+                if (prop.prefix !== undefined) fakerParams.prefix = prop.prefix; //e.g. prefix for strings
+                if (prop.suffix !== undefined) fakerParams.suffix = prop.suffix; //e.g. suffix for strings
+                if (prop.minLength !== undefined) fakerParams.minLength = prop.minLength;
+                if (prop.maxLength !== undefined) fakerParams.maxLength = prop.maxLength;
+                if (prop.casing !== undefined) fakerParams.casing = prop.casing;  //e.g. upper, lower
+                
+                // Call the Faker method with parameters if provided
+                mockItem[key] = Object.keys(fakerParams).length
+                  ? faker[module][method](fakerParams)
+                  : faker[module][method]();
+              } else {
+                mockItem[key] = prop.default || null;
+              }
+            } else if (prop.type === 'object' && prop.properties) {
+              console.log("prop: ",prop)
+              const value = await ResourceController.generateMockData(prop, 1, null)[0]; 
+              console.log("value: ",value)
+              mockItem[key] = value; 
+            } else if (prop.type === 'relationship') {
+              console.log("I am relationship field");
+              var parentRelationshipId = '';
+              if (prop.masterDetail === true){
+                parentRelationshipId = mapOfRelationshipFieldNEndpoints[key][ResourceController.getRandomInteger(mapOfRelationshipFieldNEndpoints[key].length - 1)] || null;
+              } else {
+                // For non mater-detail relationships, add (prop.nullPercentage)% null as relationship value. default is 10%
+                const nullPercentage = prop.nullPercentage || 10;
+                parentRelationshipId = mapOfRelationshipFieldNEndpoints[key][ResourceController.getRandomInteger(mapOfRelationshipFieldNEndpoints[key].length * (nullPercentage/100 + 1))] || null;
+              }
+              mockItem[key] = parentRelationshipId;
+              parentResourceIds += parentRelationshipId + ',';
+            } else if (prop.type === 'array' && prop.items) {
+              let itemCount = 1; // default
+              if (prop.count !== undefined) {
+                itemCount = prop.count;
+              } else if (prop.minItems !== undefined && prop.maxItems !== undefined) {
+                itemCount = faker.number.int({ min: prop.minItems, max: prop.maxItems });
+              } else if (prop.minItems !== undefined) {
+                itemCount = prop.minItems;
+              }
+              mockItem[key] = await ResourceController.generateMockData(prop.items, itemCount, seed ? seed + i : null);
+              } else {
               mockItem[key] = prop.default || null;
             }
-          } else if (prop.type === 'object' && prop.properties) {
-            mockItem[key] = ResourceController.generateMockData(prop, 1, null)[0]; 
-          } else if (prop.type === 'array' && prop.items) {
-            let itemCount = 1; // default
-            if (prop.count !== undefined) {
-              itemCount = prop.count;
-            } else if (prop.minItems !== undefined && prop.maxItems !== undefined) {
-              itemCount = faker.number.int({ min: prop.minItems, max: prop.maxItems });
-            } else if (prop.minItems !== undefined) {
-              itemCount = prop.minItems;
-            }
-            mockItem[key] = ResourceController.generateMockData(prop.items, itemCount, seed ? seed + i : null);
-            } else {
+          };
+        } 
+        data.push({parentResourceIds, ...mockItem});
+      }
+      return data;
+    }
+  
+  
+  static async generateMockData(schema, count, seed) {
+  const data = [];
+  const arrayOfMapsOfRelationshipFieldNEndpointId = ResourceController.getArrayOfMapsOfRelationshipFieldNEndpointIdFromSchema(schema);
+  const mapOfRelationshipFieldNEndpoints = {};
+  let maxCountOfParentResourceIds = 0;
+
+  for (const mapOfRelationshipFieldNEndpointId of arrayOfMapsOfRelationshipFieldNEndpointId) {
+    const resourceIdsByEndpoints = await Resource.findIdsByEndpointId(mapOfRelationshipFieldNEndpointId.endpointId);
+    const resourceIds = resourceIdsByEndpoints.map(resource => resource.id);
+    mapOfRelationshipFieldNEndpoints[mapOfRelationshipFieldNEndpointId.field] = resourceIds;
+    if (resourceIds.length > maxCountOfParentResourceIds) {
+      maxCountOfParentResourceIds = resourceIds.length;
+    }
+  }
+
+  if (maxCountOfParentResourceIds > 0) count *= maxCountOfParentResourceIds;
+
+  for (let i = 0; i < count; i++) {
+    if (seed) {
+      faker.seed(seed + i); // Set seed for reproducible results
+    }
+    const mockItem = {};
+    let parentResourceIds = ''; // Included in output even if empty
+
+    if (schema.type === 'object' && schema.properties) {
+      // Use for...of to handle async operations
+      for (const [key, prop] of Object.entries(schema.properties)) {
+        if (prop.faker) {
+          const [module, method] = prop.faker.split('.');
+          if (faker[module] && faker[module][method]) {
+            const fakerParams = {};
+            // Numeric parameters
+            if (prop.min !== undefined) fakerParams.min = prop.min;
+            if (prop.max !== undefined) fakerParams.max = prop.max;
+            // String parameters
+            if (prop.length !== undefined) fakerParams.length = prop.length;
+            if (prop.prefix !== undefined) fakerParams.prefix = prop.prefix;
+            if (prop.suffix !== undefined) fakerParams.suffix = prop.suffix;
+            if (prop.minLength !== undefined) fakerParams.minLength = prop.minLength;
+            if (prop.maxLength !== undefined) fakerParams.maxLength = prop.maxLength;
+            if (prop.casing !== undefined) fakerParams.casing = prop.casing;
+
+            // Call the Faker method with parameters if provided
+            mockItem[key] = Object.keys(fakerParams).length
+              ? faker[module][method](fakerParams)
+              : faker[module][method]();
+          } else {
             mockItem[key] = prop.default || null;
           }
-        });
-      } 
-      data.push(mockItem);
+        } else if (prop.type === 'object' && prop.properties) {
+          const value = (await ResourceController.generateMockData(prop, 1, null))[0];
+          mockItem[key] = value;
+        } else if (prop.type === 'relationship') {
+          let parentRelationshipId = '';
+          if (prop.masterDetail === true) {
+            parentRelationshipId = mapOfRelationshipFieldNEndpoints[key][ResourceController.getRandomInteger(mapOfRelationshipFieldNEndpoints[key].length - 1)] || null;
+          } else {
+            const nullPercentage = prop.nullPercentage || 10;
+            parentRelationshipId = mapOfRelationshipFieldNEndpoints[key][ResourceController.getRandomInteger(mapOfRelationshipFieldNEndpoints[key].length * (nullPercentage / 100 + 1))] || null;
+          }
+          mockItem[key] = parentRelationshipId;
+          parentResourceIds += parentRelationshipId + ',';
+        } else if (prop.type === 'array' && prop.items) {
+          let itemCount = 1; // default
+          if (prop.count !== undefined) {
+            itemCount = prop.count;
+          } else if (prop.minItems !== undefined && prop.maxItems !== undefined) {
+            itemCount = faker.number.int({ min: prop.minItems, max: prop.maxItems });
+          } else if (prop.minItems !== undefined) {
+            itemCount = prop.minItems;
+          }
+          mockItem[key] = await ResourceController.generateMockData(prop.items, itemCount, seed ? seed + i : null);
+        } else {
+          mockItem[key] = prop.default || null;
+        }
+      }
     }
-    return data;
-  }
 
-  static async createMockData(req, res) {
-    try {
-      const { endpoint_id, count } = req.body;
-      if (!endpoint_id || !count || count <= 0) {
-        return res.status(400).json({ error: 'Endpoint ID and positive count are required' });
-      }
-      const endpoint = await Endpoint.findById(endpoint_id);
-      if (!endpoint) {
-        return res.status(404).json({ error: 'Endpoint not found' });
-      }
-      if (!endpoint.mock_enabled) {
-        return res.status(400).json({ error: 'Mocking is not enabled for this endpoint' });
-      }
-      if (!endpoint.schema) {
-        return res.status(400).json({ error: 'No schema defined for this endpoint' });
-      }
-      const mockData = ResourceController.generateMockData(endpoint.schema, count, endpoint.faker_seed);
-      const resources = [];
-      for (const data of mockData) {
-        const resource = await Resource.create({ endpoint_id, data });
-        resources.push(resource);
-      }
-      res.status(201).json(resources);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
+    data.push({ parentResourceIds, ...mockItem });
   }
-
+  return data;
+}
   static async createResource(req, res) {
     try {
       const { endpoint_id, data } = req.body;

@@ -2,6 +2,7 @@ const Endpoint = require('../models/Endpoint');
 const Api = require('../models/Api');
 const ResourceController = require('./resourceController');
 const Resource = require('../models/Resource');
+const { concatenateAndDeleteNestedKey } = require('../utils/filterData');
 
 class EndpointController {
   static validateSchema(schema) {
@@ -17,7 +18,7 @@ class EndpointController {
     if (!schema.type) {
       throw new Error('Schema must have a "type" field');
     }
-    const validTypes = ['string', 'number', 'integer', 'boolean', 'object', 'array', 'null'];
+    const validTypes = ['string', 'number', 'integer', 'boolean', 'object', 'array', 'null', 'relationship'];
     if (!validTypes.includes(schema.type)) {
       throw new Error(`Invalid type: ${schema.type}`);
     }
@@ -77,9 +78,11 @@ class EndpointController {
       // Generate mock data if mock_enabled is true and mock_count is provided
       let resources = [];
       if (mock_enabled && mock_count > 0 && schema) {
-        const mockData = ResourceController.generateMockData(schema, mock_count, faker_seed);
+        const mockData = await ResourceController.generateMockData(schema, mock_count, faker_seed);
         for (const data of mockData) {
-          const resource = await Resource.create({ endpoint_id: endpoint.id, data });
+          // console.log("data: ",data)
+          const parentResourceIds = concatenateAndDeleteNestedKey(data, 'parentResourceIds' );
+          const resource = await Resource.create({ endpoint_id: endpoint.id, data, parent_resource_Ids: parentResourceIds });
           resources.push(resource);
         }
       }
@@ -148,7 +151,19 @@ class EndpointController {
         faker_seed,
         schema
       });
-      res.json(updatedEndpoint);
+
+      // Generate mock data if mock_enabled is true and mock_count is provided
+      let resources = [];
+      if (mock_enabled && mock_count > 0 && schema) {
+        const mockData = await ResourceController.generateMockData(schema, mock_count, faker_seed);
+        for (const data of mockData) {
+          const parentResourceIds = data.parentResourceIds;
+          delete data.parentResourceIds; // Remove parentReoi
+          const resource = await Resource.create({ endpoint_id: endpoint.id, data, parent_resource_Ids: parentResourceIds });
+          resources.push(resource);
+        }
+      }
+      res.json({endpoint:updatedEndpoint, resources});
     } catch (error) {
       res.status(400).json({ error: error.message });
     }

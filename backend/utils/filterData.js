@@ -82,4 +82,32 @@ function filterData(req, res, data) {
   return filteredData;
 }
 
-module.exports = { filterData };
+function concatenateAndDeleteNestedKey(obj, keyToConcat) {
+  // Array to store values
+  let result = [];
+
+  if (!obj || typeof obj !== 'object') {
+    return '';
+  }
+  // Store and delete the key value if it exists in the current object
+  if (keyToConcat in obj) {
+    result.push(obj[keyToConcat]);
+    delete obj[keyToConcat];
+  }
+
+  // Recursively process all nested objects
+  for (let key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      if (typeof obj[key] === 'object' && obj[key] !== null) {
+        // Recursively call for nested objects
+        const nestedResult = concatenateAndDeleteNestedKey(obj[key], keyToConcat);
+        if (nestedResult) {
+          result.push(nestedResult);
+        }
+      }
+    }
+  }
+  return result.join('');
+}
+
+module.exports = { filterData, concatenateAndDeleteNestedKey };
