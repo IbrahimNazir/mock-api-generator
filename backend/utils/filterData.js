@@ -1,4 +1,4 @@
-const RSERVED_QUERY_PARAMS = ['page', 'limit', 'sort', 'fields'];
+const RSERVED_QUERY_PARAMS = ['page', 'limit', 'sort', 'fields','delay'];
 
 function filterData(req, res, data) {
   // Return empty array if data is empty
