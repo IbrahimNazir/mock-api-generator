@@ -60,7 +60,7 @@ export const APITester: React.FC<APITesterProps> = ({
   open,
   onOpenChange,
   endpoint,
-  baseURL = 'http://localhost:3000'
+  baseURL = 'https://mock-api-generator.onrender.com/api/v1/'
 }) => {
   const [method, setMethod] = useState('GET');
   const [url, setUrl] = useState('');

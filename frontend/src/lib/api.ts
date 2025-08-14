@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const BASE_URL = 'http://localhost:3000';
+export const BASE_URL = 'https://mock-api-generator.onrender.com/api/v1';
 
 // Create axios instance
 const api = axios.create({

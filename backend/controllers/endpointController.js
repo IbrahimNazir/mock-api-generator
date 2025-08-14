@@ -127,22 +127,37 @@ class EndpointController {
 
   static async updateEndpoint(req, res) {
     try {
-      const { path, methods, description, mock_enabled, mock_count, faker_seed, schema } = req.body;
+      const { api_id, path, methods, description, mock_enabled, mock_count, faker_seed, schema } = req.body;
+      // Validate required fields
+      if (!api_id || !path || !methods) {
+        return res.status(400).json({ error: 'API ID, path, and methods are required' });
+      }
+
+      // Validate methods and schema
+      EndpointController.validateMethods(methods);
+      if (schema) {
+        EndpointController.validateSchema(schema);
+      }
+      console.log("Here 3")
+      // Check if endpoint exists
       const endpoint = await Endpoint.findById(req.params.id);
       if (!endpoint) {
         return res.status(404).json({ error: 'Endpoint not found' });
       }
-      const api = await Api.findById(endpoint.api_id);
+      console.log("Here 4")
+
+      // Verify API exists and user authorization
+      const api = await Api.findById(api_id);
+      if (!api) {
+        return res.status(404).json({ error: 'API not found' });
+      }
       if (api.user_id !== req.user.id) {
         return res.status(403).json({ error: 'Unauthorized' });
       }
-      if (methods) {
-        EndpointController.validateMethods(methods);
-      }
-      if (schema) {
-        EndpointController.validateSchema(schema);
-      }
+
+      // Update endpoint
       const updatedEndpoint = await Endpoint.update(req.params.id, {
+        api_id,
         path,
         methods,
         description,
@@ -152,22 +167,29 @@ class EndpointController {
         schema
       });
 
-      // Generate mock data if mock_enabled is true and mock_count is provided
+      // Delete existing resources
+      await Resource.deleteByEndpointId(endpoint.id);
+
+      // Generate new mock data if enabled
       let resources = [];
       if (mock_enabled && mock_count > 0 && schema) {
         const mockData = await ResourceController.generateMockData(schema, mock_count, faker_seed);
         for (const data of mockData) {
-          const parentResourceIds = data.parentResourceIds;
-          delete data.parentResourceIds; // Remove parentReoi
-          const resource = await Resource.create({ endpoint_id: endpoint.id, data, parent_resource_Ids: parentResourceIds });
+          const parentResourceIds = concatenateAndDeleteNestedKey(data, 'parentResourceIds');
+          const resource = await Resource.create({ 
+            endpoint_id: endpoint.id, 
+            data, 
+            parent_resource_Ids: parentResourceIds 
+          });
           resources.push(resource);
         }
       }
-      res.json({endpoint:updatedEndpoint, resources});
+
+      res.status(200).json({ endpoint: updatedEndpoint, resources });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
-  }
+}
 
   static async deleteEndpoint(req, res) {
     try {

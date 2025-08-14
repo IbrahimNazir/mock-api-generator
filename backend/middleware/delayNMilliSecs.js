@@ -1,7 +1,5 @@
 export const delayNMilliSecs = (req, res, next) => {
-  console.log('I am here')
   if (!req.query || !req.query.delay) {
-    console.log('next')
     return next();
   }
   let n;

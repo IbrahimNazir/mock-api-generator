@@ -182,7 +182,7 @@ export const APIDetails = () => {
     );
   }
 
-  const baseURL = `http://localhost:3000/${user?.username || 'api'}${api.base_path}`;
+  const baseURL = `https://mock-api-generator.onrender.com/${user?.username || 'api'}${api.base_path}`;
 
   return (
     <div className="container mx-auto px-4 py-8">
