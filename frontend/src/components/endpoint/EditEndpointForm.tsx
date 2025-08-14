@@ -1,0 +1,420 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { SchemaBuilder } from './SchemaBuilder';
+import { Endpoint, endpointsAPI } from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
+import { AxiosResponse } from 'axios';
+
+const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+
+const editEndpointSchema = z.object({
+  api_id: z.string().min(1, 'Api Id is required'),
+  path: z.string().min(1, 'Path is required').regex(/^\//, 'Path must start with /'),
+  methods: z.array(z.string()).min(1, 'At least one HTTP method is required'),
+  description: z.string().min(1, 'Description is required').max(500, 'Description too long'),
+  mock_enabled: z.boolean(),
+  mock_count: z.number().min(1, 'Mock count must be at least 1').max(100, 'Mock count cannot exceed 100'),
+  faker_seed: z.union([z.string(), z.number()]),
+});
+
+type EditEndpointFormValues = z.infer<typeof editEndpointSchema>;
+
+export const EditEndpointForm = () => {
+  const { apiId, endpointId } = useParams<{ apiId: string; endpointId: string }>();
+  const [endpointsByApiId, setEndpointsByApiId] = useState<Endpoint[]>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [schema, setSchema] = useState({
+    type: 'object',
+    properties: {},
+    required: [],
+  });
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const form = useForm<EditEndpointFormValues>({
+    resolver: zodResolver(editEndpointSchema),
+    defaultValues: {
+      path: '/',
+      methods: ['GET'],
+      description: '',
+      mock_enabled: true,
+      mock_count: 5,
+      faker_seed: Math.floor(Math.random() * 1000),
+    },
+  });
+
+  const fetchEndpointByApi = async () => {
+    try {
+      const endpoints = await endpointsAPI.getByAPI(apiId!);
+      setEndpointsByApiId(endpoints.data);
+    } catch (error: any) {
+      toast({
+        title: 'Error occurred while fetching endpoints',
+        description: error.response?.data?.message || 'Something went wrong',
+      });
+    }
+  };
+
+  const fetchEndpoint = async () => {
+    if (!endpointId) return;
+    
+    try {
+      const response = await endpointsAPI.getEndpoint(endpointId);
+      const endpoint = response.data;
+      
+      // Populate form with existing data
+      form.reset({
+        api_id: endpoint.api_id,
+        path: endpoint.path,
+        methods: endpoint.methods,
+        description: endpoint.description,
+        mock_enabled: endpoint.mock_enabled,
+        mock_count: endpoint.mock_count,
+        faker_seed: endpoint.faker_seed,
+      });
+      
+      // Set schema if it exists
+      if (endpoint.schema) {
+        setSchema(endpoint.schema);
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: 'Error occurred while fetching endpoint',
+        description: error.response?.data?.message || 'Something went wrong',
+      });
+      // Navigate back if endpoint not found
+      navigate(`/apis/${apiId}`);
+    } finally {
+      setIsInitialLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (apiId && endpointId) {
+      Promise.all([
+        fetchEndpointByApi(),
+        fetchEndpoint()
+      ]);
+    }
+  }, [apiId, endpointId]);
+
+  const onSubmit = async (values: EditEndpointFormValues) => {
+    if (!endpointId) return;
+
+    setIsLoading(true);
+    try {
+      const response = await endpointsAPI.updateEndpoint(endpointId, {
+        api_id: values.api_id,
+        path: values.path,
+        methods: values.methods,
+        description: values.description,
+        mock_enabled: values.mock_enabled,
+        mock_count: values.mock_count,
+        faker_seed: values.faker_seed,
+        schema,
+      });
+      
+      toast({
+        title: "Endpoint updated successfully",
+        description: `${values.path} endpoint has been updated`,
+      });
+      
+      navigate(`/apis/${apiId}`);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to update endpoint",
+        description: error.response?.data?.message || "Something went wrong",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Memoize onSchemaChange to provide a stable reference
+  const onSchemaChange = useCallback((newSchema: {
+    type: 'object',
+    properties: {},
+    required: [],
+  }) => {
+    setSchema(newSchema); // Update parent state
+  }, []); // Empty dependency array if schema update is the only concern
+
+  const addDefaultProperties = () => {
+    setSchema({
+      type: 'object',
+      properties: {
+        id: {
+          name: 'id',
+          type: 'string',
+          format: 'uuid',
+          faker: 'string.uuid',
+          required: true,
+        },
+        name: {
+          name: 'name',
+          type: 'string',
+          faker: 'person.fullName',
+          required: true,
+        },
+        email: {
+          name: 'email',
+          type: 'string',
+          format: 'email',
+          faker: 'internet.email',
+          required: false,
+        },
+        created_at: {
+          name: 'created_at',
+          type: 'string',
+          format: 'date-time',
+          faker: 'date.recent',
+          required: false,
+        },
+      },
+      required: ['id', 'name'],
+    });
+  };
+
+  if (isInitialLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading endpoint...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Edit Endpoint</h1>
+        <p className="text-muted-foreground mt-1">
+          Modify endpoint configuration, schema and mock data settings
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Endpoint Configuration</CardTitle>
+            <CardDescription>
+              Update the endpoint settings
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="path"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Endpoint Path</FormLabel>
+                      <FormControl>
+                        <Input placeholder="/users" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        The URL path for this endpoint
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="methods"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>HTTP Methods</FormLabel>
+                      <div className="grid grid-cols-3 gap-4">
+                        {HTTP_METHODS.map((method) => (
+                          <FormField
+                            key={method}
+                            control={form.control}
+                            name="methods"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value?.includes(method)}
+                                    onCheckedChange={(checked) => {
+                                      return checked
+                                        ? field.onChange([...field.value, method])
+                                        : field.onChange(
+                                            field.value?.filter((value) => value !== method)
+                                          );
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormLabel className="text-sm font-normal">
+                                  {method}
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Describe what this endpoint does..."
+                          className="min-h-[80px]"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="mock_enabled"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Enable Mock Data</FormLabel>
+                        <FormDescription>
+                          Generate fake data for this endpoint
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                {form.watch('mock_enabled') && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="mock_count"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Mock Data Count</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              min="1" 
+                              max="100"
+                              {...field}
+                              onChange={(e) => field.onChange(parseInt(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Number of mock records to generate (1-100)
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="faker_seed"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Faker Seed</FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value)}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Seed for consistent fake data generation
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
+
+                <div className="flex items-center space-x-4 pt-4">
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading ? 'Updating...' : 'Update Endpoint'}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => navigate(`/apis/${apiId}`)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+
+        {/* Schema Builder */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Response Schema</CardTitle>
+            <CardDescription>
+              Define the structure of your endpoint's response data
+            </CardDescription>
+            <div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={addDefaultProperties}
+              >
+                Add Default Properties
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <SchemaBuilder
+              schema={schema}
+              onSchemaChange={onSchemaChange}
+              availableEndpoints={endpointsByApiId}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
