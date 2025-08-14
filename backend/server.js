@@ -28,6 +28,7 @@ pinger.start();
 
 // Serve static files from the React build folder
 app.use(express.static(path.join(__dirname, "../dist")));
+console.log("Looking for index.html in:", path.join(__dirname, "../dist"));
 
 // Handle React routing, return all requests to React app
 app.get("*", (req, res) => {
