@@ -31,7 +31,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Endpoint } from '@/lib/api';
+import { BASE_URL_MOCK, Endpoint } from '@/lib/api';
 
 interface APITesterProps {
   open: boolean;
@@ -60,7 +60,7 @@ export const APITester: React.FC<APITesterProps> = ({
   open,
   onOpenChange,
   endpoint,
-  baseURL = 'https://mock-api-generator.onrender.com/api/v1/'
+  baseURL = BASE_URL_MOCK
 }) => {
   const [method, setMethod] = useState('GET');
   const [url, setUrl] = useState('');

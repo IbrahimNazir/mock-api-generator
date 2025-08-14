@@ -21,7 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { apisAPI, endpointsAPI, API, Endpoint, authAPI, User } from '@/lib/api';
+import { apisAPI, endpointsAPI, API, Endpoint, authAPI, User, BASE_URL_MOCK } from '@/lib/api';
 import { APITester } from '@/components/api/APITester';
 import { 
   Plus, 
@@ -182,8 +182,8 @@ export const APIDetails = () => {
     );
   }
 
-  const baseURL = `https://mock-api-generator.onrender.com/${user?.username || 'api'}${api.base_path}`;
-
+  const baseURL = `${BASE_URL_MOCK}/${user?.username || 'api'}${api.base_path}`;
+ 
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
