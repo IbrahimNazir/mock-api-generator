@@ -1,6 +1,6 @@
 # API Management & Testing Platform
 
-A comprehensive web application for creating, managing, and testing mock APIs. Built with modern technologies including React, TypeScript, and Supabase for a seamless developer experience.
+A comprehensive web application for creating, managing, and testing mock APIs. Built with modern technologies including React, and TypeScript for a seamless developer experience.
 
 
 ## Features
