@@ -26,11 +26,11 @@ import { AxiosResponse } from 'axios';
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 
 const createEndpointSchema = z.object({
-  path: z.string().min(1, 'Path is required').regex(/^\//, 'Path must start with /'),
+  path: z.string().min(2, 'Path is required').regex(/^\//, 'Path must start with /'),
   methods: z.array(z.string()).min(1, 'At least one HTTP method is required'),
-  description: z.string().min(1, 'Description is required').max(500, 'Description too long'),
+  description: z.string().max(500, 'Description too long'),
   mock_enabled: z.boolean(),
-  mock_count: z.number().min(1, 'Mock count must be at least 1').max(100, 'Mock count cannot exceed 100'),
+  mock_count: z.number().min(1, 'Mock count must be at least 1').max(25000, 'Mock count cannot exceed 25000'),
   faker_seed: z.union([z.string(), z.number()]),
 });
 
@@ -320,7 +320,7 @@ export const CreateEndpointForm = () => {
                   <Button 
                     type="button" 
                     variant="outline" 
-                    onClick={() => navigate(`/apis/${apiId}/endpoints`)}
+                    onClick={() => navigate(`/apis/${apiId}`)}
                   >
                     Cancel
                   </Button>

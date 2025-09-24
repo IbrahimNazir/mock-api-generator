@@ -23,8 +23,8 @@ import { useToast } from '@/hooks/use-toast';
 const createAPISchema = z.object({
   name: z.string().min(1, 'API name is required').max(100, 'Name too long'),
   version: z.string().min(1, 'Version is required').regex(/^\d+\.\d+\.\d+$/, 'Version must be in format x.y.z'),
-  base_path: z.string().min(1, 'Base path is required').regex(/^\//, 'Base path must start with /'),
-  description: z.string().min(1, 'Description is required').max(500, 'Description too long'),
+  base_path: z.string().min(2, 'Base path is required').regex(/^\//, 'Base path must start with /'),
+  description: z.string().max(500, 'Description too long'),
   is_public: z.boolean(),
 });
 
