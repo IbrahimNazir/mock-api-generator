@@ -3,6 +3,7 @@ const auth = require('../middleware/auth');
 const Resource = require('../models/Resource');
 const Ajv = require('ajv');
 const { filterData } = require('../utils/filterData');
+const authorize = require('../utils/authorize');
 const ajv = new Ajv({ allErrors: true });
 
 class MockController {
@@ -57,10 +58,9 @@ class MockController {
 
       // Check access
       if (!endpoint.is_public ) {
-        // console.log("I am private")
-        auth(req, res, next);
+        await authorize(req, res);
         if (req.user?.id !== endpoint.user_id){
-          return res.status(403).json({ error: 'Unauthorized' });
+          return res.status(401).json({ error: 'Unauthorized' });
         }
       }
 
@@ -86,7 +86,6 @@ class MockController {
   static async getResourceById(req, res) {
     try {
       const { username, apiPath, endpointPath, resourceId } = req.params;
-
       // Resolve endpoint
       const endpointQuery = `
         SELECT e.*, a.user_id, a.is_public
@@ -107,9 +106,9 @@ class MockController {
 
       // Check access
       if (!endpoint.is_public ) {
-        auth(req, res, next);
+        await authorize(req, res);
         if (req.user?.id !== endpoint.user_id){
-          return res.status(403).json({ error: 'Unauthorized' });
+          return res.status(401).json({ error: 'Unauthorized' });
         }
       }
 
@@ -151,8 +150,11 @@ class MockController {
         return res.status(404).json({ error: 'Endpoint not found or POST method not supported' });
       }
 
-      if (!endpoint.is_public && ( req.user?.id !== endpoint.user_id)) {
-        return res.status(403).json({ error: 'Unauthorized' });
+      if (!endpoint.is_public ) {
+        await authorize(req, res);
+        if (req.user?.id !== endpoint.user_id){
+          return res.status(401).json({ error: 'Unauthorized' });
+        }
       }
 
       // Validate data against schema
@@ -194,11 +196,11 @@ class MockController {
         return res.status(404).json({ error: 'Endpoint not found or PUT method not supported' });
       }
 
-      // Check access (only owner can update)
+      // Check access
       if (!endpoint.is_public ) {
-        auth(req, res, next);
+        await authorize(req, res);
         if (req.user?.id !== endpoint.user_id){
-          return res.status(403).json({ error: 'Unauthorized' });
+          return res.status(401).json({ error: 'Unauthorized' });
         }
       }
 
@@ -248,11 +250,11 @@ class MockController {
         return res.status(404).json({ error: 'Endpoint not found or PATCH method not supported' });
       }
 
-      // Check access (only owner can update)
+      // Check access
       if (!endpoint.is_public ) {
-        auth(req, res, next);
+        await authorize(req, res);
         if (req.user?.id !== endpoint.user_id){
-          return res.status(403).json({ error: 'Unauthorized' });
+          return res.status(401).json({ error: 'Unauthorized' });
         }
       }
 
@@ -281,7 +283,6 @@ class MockController {
   static async deleteResource(req, res) {
     try {
       const { username, apiPath, endpointPath, resourceId } = req.params;
-
       // Resolve endpoint
       const endpointQuery = `
         SELECT e.*, a.user_id, a.is_public
@@ -289,22 +290,21 @@ class MockController {
         JOIN apis a ON e.api_id = a.id
         JOIN users u ON a.user_id = u.id
         WHERE u.username = $1
-          AND a.bas e_path = $2
+          AND a.base_path = $2
           AND e.path = $3
           AND 'DELETE' = ANY(e.methods)
       `;
       const endpointResult = await query(endpointQuery, [username, `/${apiPath}`, `/${endpointPath}`]);
       const endpoint = endpointResult.rows[0];
-
       if (!endpoint) {
         return res.status(404).json({ error: 'Endpoint not found or DELETE method not supported' });
       }
 
-      // Check access (only owner can update)
-      if (!endpoint.is_public ) {
-        auth(req, res, next);
+      // Check access
+      if (!endpoint.is_public) {
+        await authorize(req, res);
         if (req.user?.id !== endpoint.user_id){
-          return res.status(403).json({ error: 'Unauthorized' });
+          return res.status(401).json({ error: 'Unauthorized' });
         }
       }
 
@@ -321,7 +321,7 @@ class MockController {
 
       // Update resource
       const deletedResource = await Resource.delete(resourceId);
-      res.json(deletedResource.data);
+      res.json({ ...deletedResource.data, id: resource.id});
     } catch (error) {
       res.status(400).json({ error: error.message });
     }

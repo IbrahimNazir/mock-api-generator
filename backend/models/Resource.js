@@ -24,16 +24,13 @@ class Resource {
   static async findByEndpointId(endpoint_id, page, limit) {
     const text = `SELECT * FROM resources WHERE endpoint_id = $1 ORDER BY created_at DESC${ page || limit  ? ' LIMIT $2 OFFSET $3' : ''}`;
     const limits = (page || limit) ? [limit || 10, (page - 1) * limit || 0] : [];
-    console.log("text: ", text, "endpoint_id: ", endpoint_id, "limits: ",limits)
     const result = await query(text, [endpoint_id, ...limits]);
-    console.log("results :", result.rows)
     return result.rows;
   }
   
   static async findIdsByEndpointId(endpoint_id) {
     const text = `SELECT id FROM resources WHERE endpoint_id = $1 ORDER BY created_at DESC`;
     const result = await query(text, [endpoint_id]);
-    console.log("results :", result.rows)
     return result.rows;
   }
   

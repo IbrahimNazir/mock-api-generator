@@ -10,5 +10,6 @@ router.get('/:username/:apiPath/:endpointPath/:resourceId', delayNMilliSecs, Moc
 router.post('/:username/:apiPath/:endpointPath', delayNMilliSecs, MockController.createResource);
 router.put('/:username/:apiPath/:endpointPath/:resourceId', delayNMilliSecs, MockController.updateResource);
 router.patch('/:username/:apiPath/:endpointPath/:resourceId', delayNMilliSecs, MockController.patchResource);
+router.delete('/:username/:apiPath/:endpointPath/:resourceId', delayNMilliSecs, MockController.deleteResource);
 
 module.exports = router;
