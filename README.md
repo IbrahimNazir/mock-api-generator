@@ -1,35 +1,35 @@
 # API Management & Testing Platform
 
-A comprehensive web application for creating, managing, and testing mock APIs. Built with modern technologies including React, and TypeScript for a seamless developer experience.
+A comprehensive web application for creating, managing, and testing mock APIs. Built with modern technologies including React, TypeScript, and Supabase for a seamless developer experience.
 
 
 ## Features
 
 ### Dashboard & Analytics
-![Dashboard](src/assets/dashboard.png)
+![Dashboard](frontend/src/assets/dashboard.png)
 - **Overview Dashboard**: Get insights into your API portfolio with statistics cards
 - **Recent APIs**: Quick access to your most recently created APIs
 - **User-friendly Stats**: Track total APIs, active public APIs, and private APIs
 
 ### API Management
-![My APIs](src/assets/apis-my-api.png)
-![Create API](src/assets/apis-create-api.png)
+![My APIs](frontend/src/assets/apis-my-api.png)
+![Create API](frontend/src/assets/apis-create-api.png)
 - **Create APIs**: Easy-to-use forms for creating new mock APIs
 - **API Organization**: Manage APIs with version control, descriptions, and visibility settings
 - **Public/Private APIs**: Control access to your APIs with visibility settings
 - **Search & Filter**: Quickly find APIs using the built-in search functionality
 
 ### Endpoint Management
-![View Endpoint](src/assets/apis-details-endpoint.png)
-![Create Endpoint](src/assets/apis-endpoints-create.png)
+![View Endpoint](frontend/src/assets/apis-details-endpoint.png)
+![Create Endpoint](frontend/src/assets/apis-endpoints-create.png)
 - **CRUD Operations**: Create, read, update, and delete API endpoints
 - **HTTP Methods**: Support for all standard HTTP methods (GET, POST, PUT, DELETE, etc.)
 - **Schema Builder**: Define request/response schemas for your endpoints
 - **Detailed Configuration**: Set up complex endpoint behaviors and responses
 
 ### Built-in API Testing Tool
-![API Testing](src/assets/apis-test-tool-1.png)
-![API Testing](src/assets/apis-test-tool-2.png)
+![API Testing](frontend/src/assets/apis-test-tool-1.png)
+![API Testing](frontend/src/assets/apis-test-tool-2.png)
 
 - **Interactive Testing**: Test your API endpoints directly from the interface
 - **Request Configuration**: 
@@ -44,8 +44,8 @@ A comprehensive web application for creating, managing, and testing mock APIs. B
 
 
 ### Authentication & Security
-![User Login](src/assets/auth-login.png)
-![User Register](src/assets/auth-register.png)
+![User Login](frontend/src/assets/auth-login.png)
+![User Register](frontend/src/assets/auth-register.png)
 
 - **User Authentication**: Secure login and registration system
 - **Protected Routes**: Ensure only authenticated users can access the platform
