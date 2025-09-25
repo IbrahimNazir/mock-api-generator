@@ -58,7 +58,7 @@ async function runMigration() {
       CREATE TABLE IF NOT EXISTS endpoints (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
         api_id UUID NOT NULL,
-        path VARCHAR(255) NOT NULL UNIQUE,
+        path VARCHAR(255) NOT NULL,
         methods TEXT[] NOT NULL DEFAULT '{GET,POST,PATCH,DELETE,PUT}',
         description TEXT,
         mock_enabled BOOLEAN NOT NULL DEFAULT TRUE,
@@ -69,7 +69,8 @@ async function runMigration() {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (api_id) REFERENCES apis(id) ON DELETE CASCADE,
         CONSTRAINT methods_not_empty CHECK (array_length(methods, 1) >= 1),
-        CONSTRAINT valid_methods CHECK (methods && ARRAY['GET', 'POST', 'PATCH', 'DELETE', 'PUT']::TEXT[])
+        CONSTRAINT valid_methods CHECK (methods && ARRAY['GET', 'POST', 'PATCH', 'DELETE', 'PUT']::TEXT[]),
+        CONSTRAINT unique_path_per_api UNIQUE (api_id, path)
       );
       CREATE INDEX IF NOT EXISTS idx_endpoints_path ON endpoints(path);
     `);
