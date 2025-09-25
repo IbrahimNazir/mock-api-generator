@@ -42,8 +42,16 @@ export const CreateEndpointForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [schema, setSchema] = useState({
     type: 'object',
-    properties: {},
-    required: [],
+    properties: {
+      id: {
+          name: 'id',
+          type: 'string',
+          format: 'uuid',
+          faker: 'string.uuid',
+          required: true,
+        }
+    },
+    required: ['id'],
   });
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -108,8 +116,16 @@ export const CreateEndpointForm = () => {
   // Memoize onSchemaChange to provide a stable reference
   const onSchemaChange = useCallback((newSchema: {
     type: 'object',
-    properties: {},
-    required: [],
+    properties: {
+      id: {
+          name: 'id',
+          type: 'string',
+          format: 'uuid',
+          faker: 'string.uuid',
+          required: true,
+        }
+    },
+    required: ['id'],
   }) => {
     setSchema(newSchema); // Update parent state
   }, []); // Empty dependency array if schema update is the only concern
@@ -146,7 +162,7 @@ export const CreateEndpointForm = () => {
           required: false,
         },
       },
-      required: ['id', 'name'],
+      required: ['id'],
     });
   };
 
