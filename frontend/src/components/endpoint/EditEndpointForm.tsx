@@ -353,7 +353,7 @@ export const EditEndpointForm = () => {
                             <Input 
                               type="number" 
                               min="1" 
-                              max="100"
+                              max="25000"
                               {...field}
                               onChange={(e) => field.onChange(parseInt(e.target.value))}
                             />
