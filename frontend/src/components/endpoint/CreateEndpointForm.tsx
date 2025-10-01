@@ -300,7 +300,7 @@ export const CreateEndpointForm = () => {
                             />
                           </FormControl>
                           <FormDescription>
-                            Number of mock records to generate (1-100)
+                            Number of mock records to generate
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
