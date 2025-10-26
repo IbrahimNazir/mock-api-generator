@@ -5,6 +5,7 @@
     "main": "server.js",
     "scripts": {
         "start": "node server.js",
+        "render:build": "npm i",
         "dev": "nodemon server.js",
         "migrate": "node ./models/migrations.js"
     },
