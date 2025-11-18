@@ -84,12 +84,21 @@ class ResourceController {
             } else if (prop.type === 'relationship') {
               console.log("I am relationship field");
               var parentRelationshipId = '';
-              if (prop.masterDetail === true){
-                parentRelationshipId = mapOfRelationshipFieldNEndpoints[key][ResourceController.getRandomInteger(mapOfRelationshipFieldNEndpoints[key].length - 1)] || null;
+              const parentIds = mapOfRelationshipFieldNEndpoints[key];
+              const numParents = parentIds.length;
+              
+              if (numParents > 0) {
+                if (prop.masterDetail === true) {
+                  // SEQUENTIAL/CYCLICAL SELECTION
+                  // Ensures that for count * numParents items, the parent IDs cycle sequentially
+                  const parentIndex = i % numParents;
+                  parentRelationshipId = parentIds[parentIndex];
+                } else {
+                  const nullPercentage = prop.nullPercentage || 10;
+                  parentRelationshipId = mapOfRelationshipFieldNEndpoints[key][ResourceController.getRandomInteger(mapOfRelationshipFieldNEndpoints[key].length * (nullPercentage / 100 + 1))] || null;
+                }
               } else {
-                // For non mater-detail relationships, add (prop.nullPercentage)% null as relationship value. default is 10%
-                const nullPercentage = prop.nullPercentage || 10;
-                parentRelationshipId = mapOfRelationshipFieldNEndpoints[key][ResourceController.getRandomInteger(mapOfRelationshipFieldNEndpoints[key].length * (nullPercentage/100 + 1))] || null;
+                  parentRelationshipId = null; // No parents available
               }
               mockItem[key] = parentRelationshipId;
               parentResourceIds += parentRelationshipId + ',';
