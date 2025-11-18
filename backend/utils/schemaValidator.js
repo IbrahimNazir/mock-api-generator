@@ -25,7 +25,7 @@ class schemaValidator {
       type: raw.type || 'object',
       required: Array.isArray(raw.required) ? [...raw.required] : [],
       properties: {},
-      additionalProperties: false
+      additionalProperties: true
     };
 
     if (raw.properties) {
@@ -101,7 +101,6 @@ class schemaValidator {
     if (!Array.isArray(errors) || errors.length === 0) return [];
 
     return errors
-      .filter(e => e.keyword !== 'additionalProperties')
       .map(e => {
         const path = e.instancePath || '';
         const field = path ? path.slice(1).replace(/\//g, '.') : '';
