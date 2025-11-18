@@ -85,7 +85,9 @@ class ResourceController {
               console.log("I am relationship field");
               var parentRelationshipId = '';
               const parentIds = mapOfRelationshipFieldNEndpoints[key];
+              console.log("parentIds: ",parentIds);
               const numParents = parentIds.length;
+              console.log("numParents: ",numParents);
               
               if (numParents > 0) {
                 if (prop.masterDetail === true) {
@@ -93,6 +95,10 @@ class ResourceController {
                   // Ensures that for count * numParents items, the parent IDs cycle sequentially
                   const parentIndex = i % numParents;
                   parentRelationshipId = parentIds[parentIndex];
+                  console.log("parentIndex: ",parentIndex);
+                  console.log("parentRelationshipId: ",parentRelationshipId);
+
+
                 } else {
                   const nullPercentage = prop.nullPercentage || 10;
                   parentRelationshipId = mapOfRelationshipFieldNEndpoints[key][ResourceController.getRandomInteger(mapOfRelationshipFieldNEndpoints[key].length * (nullPercentage / 100 + 1))] || null;
