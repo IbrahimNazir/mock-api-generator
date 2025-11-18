@@ -80,7 +80,6 @@ class EndpointController {
       if (mock_enabled && mock_count > 0 && schema) {
         const mockData = await ResourceController.generateMockData(schema, mock_count, faker_seed);
         for (const data of mockData) {
-          // console.log("data: ",data)
           const parentResourceIds = concatenateAndDeleteNestedKey(data, 'parentResourceIds' );
           const resource = await Resource.create({ endpoint_id: endpoint.id, data, parent_resource_Ids: parentResourceIds });
           resources.push(resource);
@@ -138,13 +137,11 @@ class EndpointController {
       if (schema) {
         EndpointController.validateSchema(schema);
       }
-      console.log("Here 3")
       // Check if endpoint exists
       const endpoint = await Endpoint.findById(req.params.id);
       if (!endpoint) {
         return res.status(404).json({ error: 'Endpoint not found' });
       }
-      console.log("Here 4")
 
       // Verify API exists and user authorization
       const api = await Api.findById(api_id);
