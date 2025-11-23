@@ -35,7 +35,6 @@ function filterData(req, res, data) {
 
   // Parse query parameters
   const filters = {};
-  console.log("req.query: ", req.query)
   for (const [key, val] of Object.entries(req.query)) {
     const field = key;
     if (RSERVED_QUERY_PARAMS.includes(field)) continue; // Skip reserved query params
@@ -46,13 +45,12 @@ function filterData(req, res, data) {
       operator = Object.entries(val)[0][0];
       value = Object.entries(val)[0][1];
     }
-    console.log("field: ", field, " operator: ", operator, "value: ", value);
 
     if (validFields[field] && operators[validFields[field]][operator]) {
       filters[field] = { operator, value: value };
       console.log("filters: ", filters)
     } else {
-      return res.status(400).json({ error: `Invalid field or operator: ${key}` });
+      throw { status:400, message: `Invalid field or operator: ${key}`};
     }
   }
 
@@ -74,7 +72,7 @@ function filterData(req, res, data) {
             return false;
         }
       } catch (error) {
-        return res.status(400).json({ error: `Invalid value for ${field}: ${value}` });
+        throw { status:400, message: `Invalid value for ${field}: ${value}`};
       }
     });
   });

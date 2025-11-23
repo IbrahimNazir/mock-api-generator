@@ -74,7 +74,7 @@ class MockController {
 
       // Apply filtering if query parameters are present
       if (Object.keys(req.query).length > 0) {
-        data = filterData(req, res, data);
+        data = filterData(req, res, data);                  
       }
       if (isPagination) {
         const total = await Resource.findTotalCountByEndpointId(endpoint.id);
@@ -82,7 +82,9 @@ class MockController {
       }
       return res.json(data);
     } catch (error) {
-      return res.status(500).json({ error: error.message });
+      if (!res.headersSent){
+        return res.status(error.status || 500).json({ error: error.message });
+      }
     }
   }
 
