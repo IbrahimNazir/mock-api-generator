@@ -1,8 +1,8 @@
 # Mock API Generator
-
 **Build, manage, test and share production-grade mock APIs in minutes — no backend required.**
 
 Perfect for frontend devs, prototyping, QA, and simulating real-world APIs while the real backend catches up.
+
 
 [![Stars](https://img.shields.io/github/stars/IbrahimNazir/mock-api-generator?style=social)](https://github.com/IbrahimNazir/mock-api-generator)
 [![Forks](https://img.shields.io/github/forks/IbrahimNazir/mock-api-generator?style=social)](https://github.com/IbrahimNazir/mock-api-generator)
@@ -11,7 +11,7 @@ Perfect for frontend devs, prototyping, QA, and simulating real-world APIs while
 [![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
 
 ---
-
+### **[Live Demo](https://mock-api-generator.onrender.com)**
 ## Key Features
 
 - **Smart Filtering**  
