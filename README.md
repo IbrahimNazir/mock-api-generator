@@ -1,9 +1,58 @@
-# API Management & Testing Platform
+# Mock API Generator
 
-A comprehensive web application for creating, managing, and testing mock APIs. Built with modern technologies including React, TypeScript, and Supabase for a seamless developer experience.
+**Build, manage, test and share production-grade mock APIs in minutes — no backend required.**
 
+Perfect for frontend devs, prototyping, QA, and simulating real-world APIs while the real backend catches up.
 
-## Features
+[![Stars](https://img.shields.io/github/stars/IbrahimNazir/mock-api-generator?style=social)](https://github.com/IbrahimNazir/mock-api-generator)
+[![Forks](https://img.shields.io/github/forks/IbrahimNazir/mock-api-generator?style=social)](https://github.com/IbrahimNazir/mock-api-generator)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
+
+---
+
+## Key Features
+
+- **Smart Filtering**  
+  Filter API responses by any field → get exactly the data slice you need for different test scenarios
+
+- **Built-in Pagination**  
+  Automatic pagination support with custom page sizes, offsets, and navigation — behaves like real-world APIs
+
+- **Response Delays**  
+  Add realistic network latency (configurable ms) to test loading states, spinners, skeletons & timeouts
+
+- **Request Validator**  
+  Validate the request body based on the validations defined while creating the schema.
+
+- **Faker Integration**  
+  Generate lifelike mock data on-the-fly: names, addresses, emails, phones, dates, products, finance, etc. using Faker.js
+
+- **Nested Data Support**  
+  Build complex, deeply nested JSON structures — objects inside arrays, arrays inside objects — exactly like production APIs
+
+- **Data Relationships**  
+  Link related entities (users → their posts, orders → customer + items, etc.) for consistent, relational mock data
+
+- **Integrated Real-time Testing Tool** (Postman-style, but better — inside your app)  
+  - All HTTP methods (GET, POST, PUT, DELETE, PATCH…)  
+  - Custom headers, JSON body editor with validation  
+  - Instant responses: pretty-printed JSON, status codes, timing, headers  
+  - One-click copy response / headers
+
+- **Private API**  
+  Create private apis with JWT Bearer token for authorization
+
+Plus:
+- Clean **Dashboard** with stats, recent APIs, public/private overview
+- Full **API & Endpoint CRUD** — descriptions, visibility control
+- **Schema Builder** for defining requests/responses
+- Secure **Auth** (login/register) with protected routes
+- Modern, responsive UI (Tailwind + shadcn/ui)
+
+  
+## UI Walkthrough & Experience
 
 ### Dashboard & Analytics
 ![Dashboard](frontend/src/assets/dashboard.png)
@@ -24,7 +73,7 @@ A comprehensive web application for creating, managing, and testing mock APIs. B
 ![Create Endpoint](frontend/src/assets/apis-endpoints-create.png)
 - **CRUD Operations**: Create, read, update, and delete API endpoints
 - **HTTP Methods**: Support for all standard HTTP methods (GET, POST, PUT, DELETE, etc.)
-- **Schema Builder**: Define request/response schemas for your endpoints
+- **Schema Builder**: Define request/response schemas for your endpoints, with validations.
 - **Detailed Configuration**: Set up complex endpoint behaviors and responses
 
 ### Built-in API Testing Tool
