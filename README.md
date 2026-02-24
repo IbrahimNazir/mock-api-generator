@@ -11,7 +11,25 @@ Perfect for frontend devs, prototyping, QA, and simulating real-world APIs while
 [![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
 
 ---
-### **[Live Demo](https://mock-api-generator.onrender.com)**
+## **[Live Demo](https://mock-api-generator.onrender.com)**
+
+## Table of Contents
+
+- [Key Features](#key-features)
+- [UI Walkthrough & Experience](#ui-walkthrough--experience)
+  - [Dashboard & Analytics](#dashboard--analytics)
+  - [API Management](#api-management)
+  - [Endpoint Management](#endpoint-management)
+  - [Built-in API Testing Tool](#built-in-api-testing-tool)
+  - [Authentication & Security](#authentication--security)
+- [Query Parameters for Mock API Endpoints](#query-parameters-for-mock-api-endpoints)
+  - [Supported Query Parameters](#supported-query-parameters)
+  - [Filtering – Bracket Notation](#filtering--bracket-notation)
+- [Tech Stack](#tech-stack)
+- [Installation & Setup](#installation--setup)
+- [Usage](#usage)
+- [Contributing](#contributing)
+  
 ## Key Features
 
 - **Smart Filtering**  
@@ -100,6 +118,42 @@ Plus:
 - **Protected Routes**: Ensure only authenticated users can access the platform
 - **User Profiles**: Manage user information and preferences
 
+## Query Parameters for Mock API Endpoints
+
+Your mock APIs are designed to feel like real-world REST APIs, with support for filtering, pagination, delays, and single-item retrieval.
+
+GET /:username/:apiBasePath/:endpointPath[/:resourceId]
+
+textExamples:
+- List all: `/ibrahim/shop/products`
+- Single item: `/ibrahim/shop/products/acde070d-8c4c-4f0d-9d8a-162843c10333`
+- With params: `/ibrahim/shop/products?name[like]=phone&price[gte]=500&delay=1200`
+
+### Supported Query Parameters
+
+| Parameter      | Purpose                                      | Example                                      | Default       | 
+|----------------|----------------------------------------------|----------------------------------------------|---------------|
+| `page`         | Pagination – which page to return            | `?page=3`                                    | 1             |
+| `limit`        | Number of items per page                     | `?limit=20`                                  | infinite            |
+| `delay`        | Simulate network latency (milliseconds)      | `?delay=1500`                                | 0             |
+| Filtering      | Filter results by any field in your data     | `?name[like]=ali&age[gte]=18`                | —             |
+
+### Filtering – Bracket Notation
+
+Use **bracket notation** (`field[operator]=value`) – it's clean, readable, and matches modern API conventions.
+
+Supported operators:
+
+| Operator     | Meaning                               | Bracket Example              |
+|--------------|---------------------------------------|--------------------------------------------|
+| (none)       | Equals                                | `?status=active`                           | 
+| `eq`         | Equals (explicit)                     | `?status[eq]=active`                       | 
+| `gt`         | Greater than                          | `?age[gt]=25`                              |
+| `gte`        | Greater than or equal                 | `?price[gte]=100`                          | 
+| `lt`         | Less than                             | `?score[lt]=90`                            |
+| `lte`        | Less than or equal                    | `?age[lte]=35`                             |
+| `like`       | Contains substring (case-insensitive) | `?name[like]=ali`                          |
+
 ## Tech Stack
 
 - **Frontend**: React, TypeScript
@@ -152,3 +206,5 @@ yarn build
 3. Commit your changes (`git commit -m 'Add some amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
+
+Built with ❤️ by [Ibrahim Nazir](https://github.com/ibrahimnazir)
