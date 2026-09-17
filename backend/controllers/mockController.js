@@ -1,11 +1,29 @@
-const { query } = require('../db/db');
 const Resource = require('../models/Resource');
-const { filterData } = require('../utils/filterData');
-const authorize = require('../utils/authorize');
 const Validator = require('../utils/schemaValidator');
+const { filterData } = require('../utils/filterData');
+const { HttpError, toResponse } = require('../utils/httpError');
+const { parseSort, sortItems } = require('../utils/sortData');
+const { parsePaginationParams, paginate } = require('../utils/pagination');
+const { resourceEtag, bodyEtag, ifNoneMatchSatisfied, assertIfMatch } = require('../utils/etag');
+const { resolveMockEndpoint, appendListHeader } = require('../services/mockResolver');
+const { RESERVED_QUERY_PARAMS } = require('../utils/queryParams');
+
+// Row metadata a client may sort by even though it isn't part of the payload.
+const META_FIELDS = ['id', 'created_at', 'updated_at'];
+
+function sendError(res, error) {
+  if (res.headersSent) return;
+  const { status, body } = toResponse(error);
+  if (status >= 500) console.error(error);
+  res.status(status).json(body);
+}
+
+function present(resource) {
+  return { ...resource.data, id: resource.id };
+}
 
 class MockController {
-  
+
   /**
    * Validates data against a JSON schema using AJV
    * Throws formatted error if invalid
@@ -13,11 +31,10 @@ class MockController {
   static async validateSchema(schema, data) {
     try {
       await Validator.validate(schema, data);
-      console.log("Valid!");
-      return true
+      return true;
     } catch (err) {
-      throw new Error(err.message);
-    } 
+      throw new HttpError(400, 'VALIDATION_FAILED', err.message);
+    }
   }
 
   static async mergeData(existingData, partialData) {
@@ -33,302 +50,170 @@ class MockController {
     return merged;
   }
 
-  static async getAllResources(req, res, next) {
-    try {
-      const { username, apiPath, endpointPath } = req.params;
+  /**
+   * Load a resource that belongs to the endpoint, or throw 404.
+   */
+  static async loadOwnedResource(endpoint, resourceId) {
+    const resource = await Resource.findById(resourceId);
+    if (!resource || resource.endpoint_id !== endpoint.id) {
+      throw new HttpError(404, 'RESOURCE_NOT_FOUND', 'Resource not found');
+    }
+    return resource;
+  }
 
-      const { page, limit } = req.query;
-      const isPagination = page || limit;
-      // Resolve endpoint
-      const endpointQuery = `
-        SELECT e.*, a.user_id, a.is_public
-        FROM endpoints e
-        JOIN apis a ON e.api_id = a.id
-        JOIN users u ON a.user_id = u.id
-        WHERE u.username = $1
-          AND a.base_path = $2
-          AND e.path = $3
-          AND 'GET' = ANY(e.methods)
-      `;
-      const endpointResult = await query(endpointQuery, [username, `/${apiPath}`, `/${endpointPath}`]);
-      const endpoint = endpointResult.rows[0];
-      // console.log("endpoint: ", endpoint)
-      if (!endpoint) {
-        return res.status(404).json({ error: 'Endpoint not found or GET method not supported' });
+  /**
+   * GET /:username/:apiPath/:endpointPath
+   *
+   * Pipeline: fetch → filter → sort → paginate → ETag.
+   * Without pagination params the response is a bare array (legacy shape);
+   * with them it is `{ data, pagination, links }` (see utils/pagination.js).
+   */
+  static async getAllResources(req, res) {
+    try {
+      const { endpoint } = await resolveMockEndpoint(req, res, 'GET');
+
+      const rows = await Resource.findByEndpointId(endpoint.id);
+      const meta = new Map(rows.map(r => [r.id, r]));
+      let items = rows.map(present);
+
+      // 1. Filter (always before pagination, whatever the style)
+      const hasFilters = Object.keys(req.query).some(k => !RESERVED_QUERY_PARAMS.includes(k));
+      if (hasFilters) {
+        items = filterData(req, res, items);
       }
 
+      // 2. Sort (stable total order; cursors are bound to it)
+      const sortFields = parseSort(req.query.sort);
+      const sample = items[0];
+      if (sample) {
+        for (const f of sortFields) {
+          if (!(f.field in sample) && !META_FIELDS.includes(f.field)) {
+            throw new HttpError(400, 'INVALID_SORT', `Unknown sort field: ${f.field}`);
+          }
+        }
+      }
+      const getValue = (item, field) => (field in item ? item[field] : meta.get(item.id)?.[field]);
+      items = sortItems(items, sortFields, getValue);
 
-
-      // Check access
-      if (!endpoint.is_public) {
-        await authorize(req, res);
-        if (req.user?.id !== endpoint.user_id) {
-          return res.status(401).json({ error: 'Unauthorized' });
+      // 3. Paginate
+      const params = parsePaginationParams(req.query, endpoint.pagination_config);
+      let body = items;
+      if (params) {
+        const page = paginate(items, params, {
+          path: `${req.baseUrl}${req.path}`,
+          query: req.query,
+          sortFields,
+          getValue,
+        });
+        body = page.body;
+        for (const [name, value] of Object.entries(page.headers)) {
+          if (name === 'Link') appendListHeader(res, 'Link', value);
+          else res.set(name, value);
         }
       }
 
-      // Fetch resources
-      const resources = await Resource.findByEndpointId(endpoint.id, page, limit);
-      // console.log("resources: ",resources)
-      var data = resources.map(resource => { return { ...resource.data, id: resource.id } }); // Include resource ID in response
-
-      // Apply filtering if query parameters are present
-      if (Object.keys(req.query).length > 0) {
-        data = filterData(req, res, data);                  
+      // 4. Conditional GET
+      const etag = bodyEtag(body);
+      res.set('ETag', etag);
+      if (ifNoneMatchSatisfied(req.get('If-None-Match'), etag)) {
+        return res.status(304).end();
       }
-      if (isPagination) {
-        const total = await Resource.findTotalCountByEndpointId(endpoint.id);
-        return res.json({ data, page: parseInt(page) || 1, limit: parseInt(limit) || 10, total: parseInt(total) });
-      }
-      return res.json(data);
+      return res.json(body);
     } catch (error) {
-      if (!res.headersSent){
-        return res.status(error.status || 500).json({ error: error.message });
-      }
+      return sendError(res, error);
     }
   }
 
   static async getResourceById(req, res) {
     try {
-      const { username, apiPath, endpointPath, resourceId } = req.params;
-      // Resolve endpoint
-      const endpointQuery = `
-        SELECT e.*, a.user_id, a.is_public
-        FROM endpoints e
-        JOIN apis a ON e.api_id = a.id
-        JOIN users u ON a.user_id = u.id
-        WHERE u.username = $1
-          AND a.base_path = $2
-          AND e.path = $3
-          AND 'GET' = ANY(e.methods)
-      `;
-      const endpointResult = await query(endpointQuery, [username, `/${apiPath}`, `/${endpointPath}`]);
-      const endpoint = endpointResult.rows[0];
+      const { endpoint } = await resolveMockEndpoint(req, res, 'GET');
+      const resource = await MockController.loadOwnedResource(endpoint, req.params.resourceId);
 
-      if (!endpoint) {
-        return res.status(404).json({ error: 'Endpoint not found or GET method not supported' });
+      const etag = resourceEtag(resource);
+      res.set('ETag', etag);
+      res.set('Last-Modified', new Date(resource.updated_at).toUTCString());
+      if (ifNoneMatchSatisfied(req.get('If-None-Match'), etag)) {
+        return res.status(304).end();
       }
-
-      // Check access
-      if (!endpoint.is_public) {
-        await authorize(req, res);
-        if (req.user?.id !== endpoint.user_id) {
-          return res.status(401).json({ error: 'Unauthorized' });
-        }
-      }
-
-      // Fetch resource
-      const resource = await Resource.findById(resourceId);
-      if (!resource || resource.endpoint_id !== endpoint.id) {
-        return res.status(404).json({ error: 'Resource not found' });
-      }
-
-      res.json({ ...resource.data, id: resource.id });
+      return res.json(present(resource));
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      return sendError(res, error);
     }
   }
 
   static async createResource(req, res) {
     try {
-      const { username, apiPath, endpointPath } = req.params;
       const data = req.body;
-      if (!data) {
-        return res.status(400).json({ error: 'Request body is required' });
+      if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        throw new HttpError(400, 'BODY_REQUIRED', 'Request body must be a JSON object');
       }
+      const { endpoint } = await resolveMockEndpoint(req, res, 'POST');
 
-      // Resolve endpoint
-      const endpointQuery = `
-        SELECT e.*, a.user_id, a.is_public
-        FROM endpoints e
-        JOIN apis a ON e.api_id = a.id
-        JOIN users u ON a.user_id = u.id
-        WHERE u.username = $1
-          AND a.base_path = $2
-          AND e.path = $3
-          AND 'POST' = ANY(e.methods)
-      `;
-      const endpointResult = await query(endpointQuery, [username, `/${apiPath}`, `/${endpointPath}`]);
-      const endpoint = endpointResult.rows[0];
-
-      if (!endpoint) {
-        return res.status(404).json({ error: 'Endpoint not found or POST method not supported' });
-      }
-
-      if (!endpoint.is_public) {
-        await authorize(req, res);
-        if (req.user?.id !== endpoint.user_id) {
-          return res.status(401).json({ error: 'Unauthorized' });
-        }
-      }
       // Validate data against schema
       if (endpoint.mock_enabled && endpoint.schema) {
-        console.log("I am here")
         await MockController.validateSchema(endpoint.schema, data);
       }
-      // Create resource
       const resource = await Resource.create({ endpoint_id: endpoint.id, data });
-      res.status(201).json({ ...resource.data, id: resource.id });
+      res.set('ETag', resourceEtag(resource));
+      res.set('Location', `${req.baseUrl}${req.path.replace(/\/$/, '')}/${resource.id}`);
+      return res.status(201).json(present(resource));
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      return sendError(res, error);
     }
   }
 
   static async updateResource(req, res) {
     try {
-      const { username, apiPath, endpointPath, resourceId } = req.params;
       const data = req.body;
-
-      if (!data) {
-        return res.status(400).json({ error: 'Data is required' });
+      if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        throw new HttpError(400, 'BODY_REQUIRED', 'Request body must be a JSON object');
       }
+      const { endpoint } = await resolveMockEndpoint(req, res, 'PUT');
+      const resource = await MockController.loadOwnedResource(endpoint, req.params.resourceId);
 
-      // Resolve endpoint
-      const endpointQuery = `
-        SELECT e.*, a.user_id, a.is_public
-        FROM endpoints e
-        JOIN apis a ON e.api_id = a.id
-        JOIN users u ON a.user_id = u.id
-        WHERE u.username = $1
-          AND a.base_path = $2
-          AND e.path = $3
-          AND 'PUT' = ANY(e.methods)
-      `;
-      const endpointResult = await query(endpointQuery, [username, `/${apiPath}`, `/${endpointPath}`]);
-      const endpoint = endpointResult.rows[0];
+      // Optimistic concurrency: If-Match must equal the current ETag when supplied.
+      assertIfMatch(req.get('If-Match'), resourceEtag(resource));
 
-      if (!endpoint) {
-        return res.status(404).json({ error: 'Endpoint not found or PUT method not supported' });
-      }
-
-      // Check access
-      if (!endpoint.is_public) {
-        await authorize(req, res);
-        if (req.user?.id !== endpoint.user_id) {
-          return res.status(401).json({ error: 'Unauthorized' });
-        }
-      }
-
-      // Fetch resource
-      const resource = await Resource.findById(resourceId);
-      if (!resource || resource.endpoint_id !== endpoint.id) {
-        return res.status(404).json({ error: 'Resource not found' });
-      }
-
-      // Validate data against schema
-      // if (endpoint.schema) {
-      //   await MockController.validateSchema(endpoint.schema, data);
-      // }
-
-      // Update resource
-      const updatedResource = await Resource.update(resourceId, { data });
-      res.json({ ...updatedResource.data, id: updatedResource.id });
+      const updatedResource = await Resource.update(resource.id, { data });
+      res.set('ETag', resourceEtag(updatedResource));
+      return res.json(present(updatedResource));
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      return sendError(res, error);
     }
   }
 
   static async patchResource(req, res) {
     try {
-      const { username, apiPath, endpointPath, resourceId } = req.params;
       const data = req.body;
-
-      if (!data) {
-        return res.status(400).json({ error: 'Data is required' });
+      if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        throw new HttpError(400, 'BODY_REQUIRED', 'Request body must be a JSON object');
       }
+      const { endpoint } = await resolveMockEndpoint(req, res, 'PATCH');
+      const resource = await MockController.loadOwnedResource(endpoint, req.params.resourceId);
 
-      // Resolve endpoint
-      const endpointQuery = `
-        SELECT e.*, a.user_id, a.is_public
-        FROM endpoints e
-        JOIN apis a ON e.api_id = a.id
-        JOIN users u ON a.user_id = u.id
-        WHERE u.username = $1
-          AND a.base_path = $2
-          AND e.path = $3
-          AND 'PATCH' = ANY(e.methods)
-      `;
-      const endpointResult = await query(endpointQuery, [username, `/${apiPath}`, `/${endpointPath}`]);
-      const endpoint = endpointResult.rows[0];
-
-      if (!endpoint) {
-        return res.status(404).json({ error: 'Endpoint not found or PATCH method not supported' });
-      }
-
-      // Check access
-      if (!endpoint.is_public) {
-        await authorize(req, res);
-        if (req.user?.id !== endpoint.user_id) {
-          return res.status(401).json({ error: 'Unauthorized' });
-        }
-      }
-
-      // Fetch resource
-      const resource = await Resource.findById(resourceId);
-      if (!resource || resource.endpoint_id !== endpoint.id) {
-        return res.status(404).json({ error: 'Resource not found' });
-      }
+      assertIfMatch(req.get('If-Match'), resourceEtag(resource));
 
       // Merge partial data with existing data
       const mergedData = await MockController.mergeData(resource.data, data);
-
-      // Validate merged data against schema
-      // if (endpoint.schema) {
-      //   await MockController.validateSchema(endpoint.schema, mergedData);
-      // }
-
-      // Update resource  
-      const updatedResource = await Resource.update(resourceId, { data: mergedData });
-      res.json({ ...updatedResource.data, id: resource.id });
+      const updatedResource = await Resource.update(resource.id, { data: mergedData });
+      res.set('ETag', resourceEtag(updatedResource));
+      return res.json(present(updatedResource));
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      return sendError(res, error);
     }
   }
 
   static async deleteResource(req, res) {
     try {
-      const { username, apiPath, endpointPath, resourceId } = req.params;
-      // Resolve endpoint
-      const endpointQuery = `
-        SELECT e.*, a.user_id, a.is_public
-        FROM endpoints e
-        JOIN apis a ON e.api_id = a.id
-        JOIN users u ON a.user_id = u.id
-        WHERE u.username = $1
-          AND a.base_path = $2
-          AND e.path = $3
-          AND 'DELETE' = ANY(e.methods)
-      `;
-      const endpointResult = await query(endpointQuery, [username, `/${apiPath}`, `/${endpointPath}`]);
-      const endpoint = endpointResult.rows[0];
-      if (!endpoint) {
-        return res.status(404).json({ error: 'Endpoint not found or DELETE method not supported' });
-      }
+      const { endpoint } = await resolveMockEndpoint(req, res, 'DELETE');
+      const resource = await MockController.loadOwnedResource(endpoint, req.params.resourceId);
 
-      // Check access
-      if (!endpoint.is_public) {
-        await authorize(req, res);
-        if (req.user?.id !== endpoint.user_id) {
-          return res.status(401).json({ error: 'Unauthorized' });
-        }
-      }
+      assertIfMatch(req.get('If-Match'), resourceEtag(resource));
 
-      // Fetch resource
-      const resource = await Resource.findById(resourceId);
-      if (!resource || resource.endpoint_id !== endpoint.id) {
-        return res.status(404).json({ error: 'Resource not found' });
-      }
-
-      // Validate data against schema
-      // if (endpoint.schema) {
-      //   await MockController.validateSchema(endpoint.schema, data);
-      // }
-
-      // Update resource
-      const deletedResource = await Resource.delete(resourceId);
-      res.json({ ...deletedResource.data, id: resource.id });
+      const deletedResource = await Resource.delete(resource.id);
+      return res.json(present(deletedResource));
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      return sendError(res, error);
     }
   }
 }

@@ -46,6 +46,7 @@ async function runMigration() {
         is_public BOOLEAN DEFAULT TRUE,
         is_default BOOLEAN NOT NULL DEFAULT FALSE,
         deprecated BOOLEAN NOT NULL DEFAULT FALSE,
+        deprecated_at TIMESTAMP WITH TIME ZONE,
         sunset_at TIMESTAMP WITH TIME ZONE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -62,6 +63,7 @@ async function runMigration() {
       ALTER TABLE apis DROP CONSTRAINT IF EXISTS apis_base_path_key;
       ALTER TABLE apis ADD COLUMN IF NOT EXISTS is_default BOOLEAN NOT NULL DEFAULT FALSE;
       ALTER TABLE apis ADD COLUMN IF NOT EXISTS deprecated BOOLEAN NOT NULL DEFAULT FALSE;
+      ALTER TABLE apis ADD COLUMN IF NOT EXISTS deprecated_at TIMESTAMP WITH TIME ZONE;
       ALTER TABLE apis ADD COLUMN IF NOT EXISTS sunset_at TIMESTAMP WITH TIME ZONE;
       CREATE UNIQUE INDEX IF NOT EXISTS uq_apis_user_base_path_version ON apis(user_id, base_path, version);
       CREATE UNIQUE INDEX IF NOT EXISTS uq_apis_default_per_base_path ON apis(user_id, base_path) WHERE is_default;

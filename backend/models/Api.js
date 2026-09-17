@@ -89,6 +89,10 @@ class Api {
             is_public = COALESCE($5, is_public),
             is_default = COALESCE($6, is_default),
             deprecated = COALESCE($7, deprecated),
+            deprecated_at = CASE
+              WHEN $7::boolean IS TRUE AND deprecated IS FALSE THEN NOW()
+              WHEN $7::boolean IS FALSE THEN NULL
+              ELSE deprecated_at END,
             sunset_at = CASE WHEN $9::boolean THEN $8::timestamptz ELSE sunset_at END,
             updated_at = NOW()
         WHERE id = $10

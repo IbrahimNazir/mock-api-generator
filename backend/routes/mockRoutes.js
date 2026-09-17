@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth'); // JWT middleware
 const MockController = require('../controllers/mockController');
 const { delayNMilliSecs } = require('../middleware/delayNMilliSecs');
 
-// Mock endpoints
+// Mock endpoints.
+// Version negotiation (query / header / body), access control and ETag
+// handling happen inside the controller via services/mockResolver.js.
 router.get('/:username/:apiPath/:endpointPath', delayNMilliSecs, MockController.getAllResources);
 router.get('/:username/:apiPath/:endpointPath/:resourceId', delayNMilliSecs, MockController.getResourceById);
 router.post('/:username/:apiPath/:endpointPath', delayNMilliSecs, MockController.createResource);
