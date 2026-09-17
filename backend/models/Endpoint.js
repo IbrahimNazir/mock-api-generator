@@ -2,11 +2,11 @@ const { query } = require('../db/db');
 // const { v4: uuidv4 } = require('uuid');
 
 class Endpoint {
-  static async create({ api_id, path, methods, description, mock_enabled, mock_count, faker_seed, schema }) {
+  static async create({ api_id, path, methods, description, mock_enabled, mock_count, faker_seed, schema, pagination_config }) {
     // const id = uuidv4();
     const text = `
-      INSERT INTO endpoints (api_id, path, methods, description, mock_enabled, mock_count, faker_seed, schema, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+      INSERT INTO endpoints (api_id, path, methods, description, mock_enabled, mock_count, faker_seed, schema, pagination_config, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
       RETURNING *
     `;
     const values = [
@@ -17,7 +17,8 @@ class Endpoint {
       mock_enabled,
       mock_count,
       faker_seed,
-      schema ? JSON.stringify(schema) : null
+      schema ? JSON.stringify(schema) : null,
+      JSON.stringify(pagination_config || {})
     ];
     const result = await query(text, values);
     return result.rows[0];
@@ -29,13 +30,20 @@ class Endpoint {
     return result.rows[0];
   }
 
+  /** Resolve the endpoint serving `method path` under one API version. */
+  static async findByApiIdPathAndMethod(api_id, path, method) {
+    const text = 'SELECT * FROM endpoints WHERE api_id = $1 AND path = $2 AND $3 = ANY(methods)';
+    const result = await query(text, [api_id, path, method]);
+    return result.rows[0];
+  }
+
   static async findByApiId(api_id) {
     const text = 'SELECT * FROM endpoints WHERE api_id = $1 ORDER BY created_at DESC';
     const result = await query(text, [api_id]);
     return result.rows;
   }
 
-  static async update(id, { path, methods, description, mock_enabled, mock_count, faker_seed, schema }) {
+  static async update(id, { path, methods, description, mock_enabled, mock_count, faker_seed, schema, pagination_config }) {
     const text = `
       UPDATE endpoints
       SET path = COALESCE($1, path),
@@ -45,8 +53,9 @@ class Endpoint {
           mock_count = COALESCE($5, mock_count),
           faker_seed = COALESCE($6, faker_seed),
           schema = COALESCE($7, schema),
+          pagination_config = COALESCE($8, pagination_config),
           updated_at = NOW()
-      WHERE id = $8
+      WHERE id = $9
       RETURNING *
     `;
     const values = [
@@ -57,6 +66,7 @@ class Endpoint {
       mock_count,
       faker_seed,
       schema ? JSON.stringify(schema) : null,
+      pagination_config ? JSON.stringify(pagination_config) : null,
       id
     ];
     const result = await query(text, values);

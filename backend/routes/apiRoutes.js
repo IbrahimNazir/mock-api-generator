@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.post('/', auth, ApiController.createApi);
 router.get('/:id', auth, ApiController.getApi);
+router.get('/:id/versions', auth, ApiController.getVersions);
+router.post('/:id/versions', auth, ApiController.createVersion);
 router.get('/', auth, ApiController.getAllApis);
 router.put('/:id', auth, ApiController.updateApi);
 router.delete('/:id', auth, ApiController.deleteApi);

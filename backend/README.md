@@ -2,6 +2,8 @@
 
 This document explains how to use the API system to register users, log in, create APIs, define endpoints with schemas, and work with mock data. The system allows you to create mock APIs with endpoints that support GET, POST, PUT, and PATCH requests. It uses a PostgreSQL database and generates mock data using a library called Faker.
 
+> **Design & internals:** see [docs/BACKEND_DESIGN.md](../docs/BACKEND_DESIGN.md) for architecture, pagination styles, API versioning, ETags, rate limits and the error-code catalog. The consumer-facing query parameters are documented in the [root README](../README.md#query-parameters-for-mock-api-endpoints).
+
 ## How to Use the API
 
 The API is accessed at `http://localhost:3000`. You can test it using Postman or cURL commands. The main steps are:

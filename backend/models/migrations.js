@@ -42,8 +42,12 @@ async function runMigration() {
         name VARCHAR(255) NOT NULL,
         version VARCHAR(50) NOT NULL,
         description TEXT,
-        base_path VARCHAR(255) NOT NULL UNIQUE,
+        base_path VARCHAR(255) NOT NULL,
         is_public BOOLEAN DEFAULT TRUE,
+        is_default BOOLEAN NOT NULL DEFAULT FALSE,
+        deprecated BOOLEAN NOT NULL DEFAULT FALSE,
+        deprecated_at TIMESTAMP WITH TIME ZONE,
+        sunset_at TIMESTAMP WITH TIME ZONE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -51,6 +55,20 @@ async function runMigration() {
       CREATE INDEX IF NOT EXISTS idx_apis_base_path ON apis(base_path);
     `);
     console.log('Apis table created');
+
+    // Versioning: several versions of one API share (user_id, base_path).
+    // These statements upgrade databases created before versioning existed.
+    console.log('Applying api versioning columns/indexes...');
+    await client.query(`
+      ALTER TABLE apis DROP CONSTRAINT IF EXISTS apis_base_path_key;
+      ALTER TABLE apis ADD COLUMN IF NOT EXISTS is_default BOOLEAN NOT NULL DEFAULT FALSE;
+      ALTER TABLE apis ADD COLUMN IF NOT EXISTS deprecated BOOLEAN NOT NULL DEFAULT FALSE;
+      ALTER TABLE apis ADD COLUMN IF NOT EXISTS deprecated_at TIMESTAMP WITH TIME ZONE;
+      ALTER TABLE apis ADD COLUMN IF NOT EXISTS sunset_at TIMESTAMP WITH TIME ZONE;
+      CREATE UNIQUE INDEX IF NOT EXISTS uq_apis_user_base_path_version ON apis(user_id, base_path, version);
+      CREATE UNIQUE INDEX IF NOT EXISTS uq_apis_default_per_base_path ON apis(user_id, base_path) WHERE is_default;
+    `);
+    console.log('Api versioning ready');
 
     // Create endpoints table
     console.log('Creating endpoints table...');
@@ -65,6 +83,7 @@ async function runMigration() {
         mock_count INTEGER NOT NULL,
         faker_seed BIGINT,
         schema JSONB NOT NULL,
+        pagination_config JSONB NOT NULL DEFAULT '{}'::jsonb,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (api_id) REFERENCES apis(id) ON DELETE CASCADE,
@@ -73,6 +92,7 @@ async function runMigration() {
         CONSTRAINT unique_path_per_api UNIQUE (api_id, path)
       );
       CREATE INDEX IF NOT EXISTS idx_endpoints_path ON endpoints(path);
+      ALTER TABLE endpoints ADD COLUMN IF NOT EXISTS pagination_config JSONB NOT NULL DEFAULT '{}'::jsonb;
     `);
     console.log('Endpoints table created');
 
@@ -106,6 +126,8 @@ async function runMigration() {
         FOREIGN KEY (endpoint_id) REFERENCES endpoints(id) ON DELETE CASCADE
       );
       CREATE INDEX IF NOT EXISTS idx_parent_resource_ids ON resources(parent_resource_ids);
+      -- Matches the default collection order (-created_at, -id) used by pagination.
+      CREATE INDEX IF NOT EXISTS idx_resources_endpoint_created ON resources(endpoint_id, created_at DESC, id DESC);
     `);
     console.log('Resources table created');
 

@@ -2,6 +2,7 @@ const express = require('express');
 const routes = require('./routes');
 const mockRoutes = require('./routes/mockRoutes');
 const ServerPinger = require('./utils/serverPingerUtils');
+const { managementLimiter } = require('./middleware/rateLimit');
 const morgan = require('morgan');
 const cors = require('cors');
 const path = require("path");
@@ -11,13 +12,22 @@ const app = express();
 
 app.use(express.json());
 app.use(morgan('dev'));
+app.set('trust proxy', 1);
 app.use(cors({
   origin: '*', // Allow all origins for development
-  methods: ['GET', 'POST', 'PUT','PATCH', 'DELETE'], // Allow specific methods
-  allowedHeaders: ['Content-Type', 'Authorization'] // Allow specific headers
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 'Authorization', 'Accept',
+    'X-API-Version', 'API-Version',      // header-based API versioning
+    'If-Match', 'If-None-Match',         // ETag conditional requests
+  ],
+  exposedHeaders: [
+    'ETag', 'Link', 'X-Total-Count', 'X-API-Version',
+    'Deprecation', 'Sunset', 'Vary',
+  ],
 }));
 
-app.use('/api/v1', routes);
+app.use('/api/v1', managementLimiter, routes);
 app.use('', mockRoutes);
 
 const pinger = new ServerPinger({

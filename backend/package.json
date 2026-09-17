@@ -7,7 +7,8 @@
         "start": "node server.js",
         "render:build": "npm i",
         "dev": "nodemon server.js",
-        "migrate": "node ./models/migrations.js"
+        "migrate": "node ./models/migrations.js",
+        "test": "node --test \"tests/**/*.test.js\""
     },
     "dependencies": {
         "@faker-js/faker": "^8.3.1",
@@ -21,6 +22,7 @@
         "cors": "^2.8.5",
         "dotenv": "^16.3.1",
         "express": "^4.18.2",
+        "express-rate-limit": "^8.7.0",
         "helmet": "^7.1.0",
         "jsonwebtoken": "^9.0.2",
         "lodash": "^4.17.21",

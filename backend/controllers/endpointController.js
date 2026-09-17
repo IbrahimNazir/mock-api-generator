@@ -3,8 +3,41 @@ const Api = require('../models/Api');
 const ResourceController = require('./resourceController');
 const Resource = require('../models/Resource');
 const { concatenateAndDeleteNestedKey } = require('../utils/filterData');
+const { STYLES: PAGINATION_STYLES } = require('../utils/pagination');
 
 class EndpointController {
+  /**
+   * Validate the optional per-endpoint pagination configuration:
+   * { default_style?, default_limit?, max_limit?, always_paginate? }
+   */
+  static validatePaginationConfig(config) {
+    if (config === undefined || config === null) return;
+    if (typeof config !== 'object' || Array.isArray(config)) {
+      throw new Error('pagination_config must be an object');
+    }
+    const allowed = ['default_style', 'default_limit', 'max_limit', 'always_paginate'];
+    for (const key of Object.keys(config)) {
+      if (!allowed.includes(key)) {
+        throw new Error('Unknown pagination_config key: ' + key + '. Allowed: ' + allowed.join(', '));
+      }
+    }
+    const { default_style, default_limit, max_limit, always_paginate } = config;
+    if (default_style !== undefined && !PAGINATION_STYLES.includes(default_style)) {
+      throw new Error('pagination_config.default_style must be one of ' + PAGINATION_STYLES.join(', '));
+    }
+    for (const [key, val] of Object.entries({ default_limit, max_limit })) {
+      if (val !== undefined && (!Number.isInteger(val) || val < 1 || val > 1000)) {
+        throw new Error('pagination_config.' + key + ' must be an integer between 1 and 1000');
+      }
+    }
+    if (default_limit !== undefined && max_limit !== undefined && default_limit > max_limit) {
+      throw new Error('pagination_config.default_limit must not exceed max_limit');
+    }
+    if (always_paginate !== undefined && typeof always_paginate !== 'boolean') {
+      throw new Error('pagination_config.always_paginate must be a boolean');
+    }
+  }
+
   static validateSchema(schema) {
     if (!schema) return; // Schema is optional
     if (typeof schema !== 'object' || schema === null) {
@@ -49,7 +82,7 @@ class EndpointController {
 
   static async createEndpoint(req, res) {
     try {
-      const { api_id, path, methods, description, mock_enabled, mock_count, faker_seed, schema } = req.body;
+      const { api_id, path, methods, description, mock_enabled, mock_count, faker_seed, schema, pagination_config } = req.body;
       if (!api_id || !path || !methods) {
         return res.status(400).json({ error: 'API ID, path, and methods are required' });
       }
@@ -57,6 +90,7 @@ class EndpointController {
       if (schema) {
         EndpointController.validateSchema(schema);
       }
+      EndpointController.validatePaginationConfig(pagination_config);
       const api = await Api.findById(api_id);
       if (!api) {
         return res.status(404).json({ error: 'API not found' });
@@ -72,7 +106,8 @@ class EndpointController {
         mock_enabled,
         mock_count,
         faker_seed,
-        schema
+        schema,
+        pagination_config
       });
       
       // Generate mock data if mock_enabled is true and mock_count is provided
@@ -126,7 +161,7 @@ class EndpointController {
 
   static async updateEndpoint(req, res) {
     try {
-      const { api_id, path, methods, description, mock_enabled, mock_count, faker_seed, schema } = req.body;
+      const { api_id, path, methods, description, mock_enabled, mock_count, faker_seed, schema, pagination_config } = req.body;
       // Validate required fields
       if (!api_id || !path || !methods) {
         return res.status(400).json({ error: 'API ID, path, and methods are required' });
@@ -137,6 +172,7 @@ class EndpointController {
       if (schema) {
         EndpointController.validateSchema(schema);
       }
+      EndpointController.validatePaginationConfig(pagination_config);
       // Check if endpoint exists
       const endpoint = await Endpoint.findById(req.params.id);
       if (!endpoint) {
@@ -161,7 +197,8 @@ class EndpointController {
         mock_enabled,
         mock_count,
         faker_seed,
-        schema
+        schema,
+        pagination_config
       });
 
       // Delete existing resources
