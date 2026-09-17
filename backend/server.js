@@ -2,6 +2,7 @@ const express = require('express');
 const routes = require('./routes');
 const mockRoutes = require('./routes/mockRoutes');
 const ServerPinger = require('./utils/serverPingerUtils');
+const { managementLimiter } = require('./middleware/rateLimit');
 const morgan = require('morgan');
 const cors = require('cors');
 const path = require("path");
@@ -26,7 +27,7 @@ app.use(cors({
   ],
 }));
 
-app.use('/api/v1', routes);
+app.use('/api/v1', managementLimiter, routes);
 app.use('', mockRoutes);
 
 const pinger = new ServerPinger({
