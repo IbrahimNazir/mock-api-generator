@@ -25,6 +25,12 @@ Perfect for frontend devs, prototyping, QA, and simulating real-world APIs while
 - [Query Parameters for Mock API Endpoints](#query-parameters-for-mock-api-endpoints)
   - [Supported Query Parameters](#supported-query-parameters)
   - [Filtering – Bracket Notation](#filtering--bracket-notation)
+  - [Sorting](#sorting)
+  - [Pagination](#pagination)
+  - [API Versioning](#api-versioning)
+  - [ETags & Conditional Requests](#etags--conditional-requests)
+  - [Rate Limits](#rate-limits)
+- [Backend Design](#backend-design)
 - [Tech Stack](#tech-stack)
 - [Installation & Setup](#installation--setup)
 - [Usage](#usage)
@@ -35,8 +41,17 @@ Perfect for frontend devs, prototyping, QA, and simulating real-world APIs while
 - **Smart Filtering**  
   Filter API responses by any field → get exactly the data slice you need for different test scenarios
 
-- **Built-in Pagination**  
-  Automatic pagination support with custom page sizes, offsets, and navigation — behaves like real-world APIs
+- **Built-in Pagination — 4 styles**  
+  Page-number, offset, opaque **cursor** and keyset (`after_id`/`before_id`) pagination with `Link` headers, totals and navigation links — pick the style per request or per endpoint
+
+- **API Versioning**  
+  Run several versions of one mock API side by side and select them via query (`?api-version=2`), headers (`X-API-Version`, `Accept: application/vnd.mock-api.v2+json`) or request body; deprecation & sunset headers included
+
+- **ETags & Conditional Requests**  
+  `ETag` on every response, `If-None-Match` → `304`, `If-Match` → `412` for optimistic concurrency
+
+- **Rate Limiting**  
+  Per-IP and per-API budgets with standard `RateLimit` headers so mocks behave like governed production APIs
 
 - **Response Delays**  
   Add realistic network latency (configurable ms) to test loading states, spinners, skeletons & timeouts
@@ -131,12 +146,21 @@ textExamples:
 
 ### Supported Query Parameters
 
-| Parameter      | Purpose                                      | Example                                      | Default       | 
+| Parameter      | Purpose                                      | Example                                      | Default       |
 |----------------|----------------------------------------------|----------------------------------------------|---------------|
-| `page`         | Pagination – which page to return            | `?page=3`                                    | 1             |
-| `limit`        | Number of items per page                     | `?limit=20`                                  | infinite            |
-| `delay`        | Simulate network latency (milliseconds)      | `?delay=1500`                                | 0             |
 | Filtering      | Filter results by any field in your data     | `?name[like]=ali&age[gte]=18`                | —             |
+| `sort`         | Sort by one or more fields (`-` = descending)| `?sort=-price,name`                          | `-created_at` |
+| `pagination`   | Force a pagination style                     | `?pagination=cursor`                         | inferred      |
+| `page`         | Page-number pagination                       | `?page=3&limit=20`                           | —             |
+| `offset`       | Offset pagination                            | `?offset=40&limit=20`                        | —             |
+| `cursor`       | Cursor pagination (opaque, from `next_cursor`)| `?cursor=eyJ2IjoxLC…&limit=20`               | —             |
+| `after_id` / `before_id` | Keyset pagination anchored on an id | `?after_id=<uuid>&limit=20`                  | —             |
+| `limit`        | Items per page (`per_page`, `page_size` aliases) | `?limit=20`                              | 10 (max 100)  |
+| `include_total`| Add `total` to cursor/keyset responses       | `?include_total=true`                        | false         |
+| `api-version` / `api_version` / `v` | Select an API version   | `?api-version=2.1`                           | default version |
+| `delay`        | Simulate network latency (milliseconds)      | `?delay=1500`                                | 0             |
+
+Without any pagination parameter the endpoint returns a plain JSON array.
 
 ### Filtering – Bracket Notation
 
@@ -153,6 +177,103 @@ Supported operators:
 | `lt`         | Less than                             | `?score[lt]=90`                            |
 | `lte`        | Less than or equal                    | `?age[lte]=35`                             |
 | `like`       | Contains substring (case-insensitive) | `?name[like]=ali`                          |
+
+### Sorting
+
+`?sort=field,-other` sorts by any field of your data plus `id`, `created_at` and `updated_at`. Prefix with `-` for descending. An `id` tiebreaker is always appended so the order is stable for cursors.
+
+### Pagination
+
+Four widely used styles are available on every collection endpoint. Filters and sort always apply **before** pagination.
+
+| Style | Request | Response `pagination` object |
+|-------|---------|------------------------------|
+| **Page** | `?page=2&limit=10` | `page, limit, total, total_pages, has_more, has_previous` |
+| **Offset** | `?offset=20&limit=10` | `offset, limit, total, has_more, has_previous` |
+| **Cursor** | `?limit=10` → then `?cursor=<next_cursor>&limit=10` | `limit, next_cursor, prev_cursor, has_more, has_previous` (+ `total` with `include_total=true`) |
+| **Keyset** | `?after_id=<id>&limit=10` or `?before_id=<id>&limit=10` | `limit, after_id, before_id, first_id, last_id, has_more, has_previous` |
+
+Every paginated response shares one envelope, and the same links are sent as an RFC 8288 `Link` header (plus `X-Total-Count` when a total is known):
+
+```json
+{
+  "data": [ { "id": "…", "name": "Phone", "price": 699 } ],
+  "pagination": { "style": "cursor", "limit": 10, "next_cursor": "eyJ2IjoxLCJzIjoi…", "prev_cursor": null, "has_more": true, "has_previous": false },
+  "links": {
+    "self":  "/ibrahim/shop/products?pagination=cursor&limit=10",
+    "first": "/ibrahim/shop/products?pagination=cursor&limit=10",
+    "prev":  null,
+    "next":  "/ibrahim/shop/products?pagination=cursor&limit=10&cursor=eyJ2IjoxLCJzIjoi…"
+  }
+}
+```
+
+The style is inferred from the parameters you send, or forced with `?pagination=page|offset|cursor|keyset`. Cursors are opaque, bound to the sort order and stay consistent when rows are inserted or deleted between pages.
+
+Per-endpoint defaults can be set when creating or editing an endpoint:
+
+```json
+"pagination_config": { "default_style": "cursor", "default_limit": 20, "max_limit": 100, "always_paginate": true }
+```
+
+### API Versioning
+
+An API is identified by its base path; you can keep several **versions** (`1.0.0`, `2.0.0`, …) of it live at once. Each version has its own endpoints and data.
+
+Select a version in any of three ways (they may be combined, but must agree):
+
+| Channel | Example |
+|---------|---------|
+| Query parameter | `GET /ibrahim/shop/products?api-version=2` · `?api_version=2.1.0` · `?v=v2` |
+| Header | `X-API-Version: 2` · `API-Version: 2.1` · `Accept: application/vnd.mock-api.v2+json` · `Accept: application/json; version=2` |
+| Request body | `POST … { "api_version": "2", "name": "Phone" }` (the key is stripped before validation) |
+
+* `2` or `2.1` resolve to the highest matching version; `2.1.0` is exact.
+* No version → the default (pinned with `is_default`, otherwise the newest non-deprecated version).
+* Unknown version → `404 API_VERSION_NOT_FOUND` with `available_versions` (`406` when requested through `Accept`); conflicting hints → `400 API_VERSION_CONFLICT`.
+* Every response carries `X-API-Version`. Deprecated versions add `Deprecation`, `Sunset` and `Link: <…>; rel="successor-version"`; after the sunset date they answer `410 Gone`.
+
+Manage versions through the management API:
+
+```bash
+# list versions
+curl -H "Authorization: Bearer $TOKEN" http://localhost:3000/api/v1/apis/$API_ID/versions
+
+# create 2.0.0 as a clone of this API (endpoints + data), and make it the default
+curl -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  http://localhost:3000/api/v1/apis/$API_ID/versions \
+  -d '{"version":"2.0.0","is_default":true,"clone_resources":true}'
+
+# deprecate 1.0.0 with a sunset date
+curl -X PUT -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  http://localhost:3000/api/v1/apis/$OLD_API_ID \
+  -d '{"deprecated":true,"sunset_at":"2027-01-01T00:00:00Z"}'
+```
+
+### ETags & Conditional Requests
+
+Every collection and resource response includes a strong `ETag` (resources also send `Last-Modified`).
+
+```bash
+curl -i http://localhost:3000/ibrahim/shop/products/<id>            # → ETag: "3f2a…"
+curl -i -H 'If-None-Match: "3f2a…"' http://localhost:3000/ibrahim/shop/products/<id>   # → 304 Not Modified
+curl -i -X PATCH -H 'If-Match: "3f2a…"' -H 'Content-Type: application/json' \
+  -d '{"price": 649}' http://localhost:3000/ibrahim/shop/products/<id>   # → 200 (or 412 if someone changed it first)
+```
+
+### Rate Limits
+
+| Scope | Default budget |
+|-------|----------------|
+| Mock endpoints | 120 requests / minute per client IP **per API** |
+| Management API (`/api/v1`) | 300 requests / 15 minutes per client IP |
+| Login / register | 20 requests / 15 minutes per client IP |
+
+Responses include `RateLimit` / `RateLimit-Policy` headers; exceeding a budget returns `429` with `Retry-After` and `{ "code": "RATE_LIMITED" }`. All values are configurable via `RATE_LIMIT_*` environment variables (see `backend/.example.env`).
+
+## Backend Design
+
+Architecture, data model, the mock request pipeline, pagination/versioning internals, error codes and trade-offs are documented in [docs/BACKEND_DESIGN.md](docs/BACKEND_DESIGN.md).
 
 ## Tech Stack
 
@@ -177,14 +298,24 @@ git clone https://github.com/IbrahimNazir/mock-api-generator
 cd mock-api-generator
 ```
 
-### 2. Install Dependencies & Run Dev
+### 2. Backend
+```bash
+cd backend
+cp .example.env .env      # fill in DATABASE_URL and JWT_SECRET
+npm install
+npm run migrate           # idempotent; safe to re-run on existing databases
+npm run dev
+npm test                  # unit + route tests, no database needed
+```
+
+### 3. Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-### 3. Build for Production
+### 4. Build for Production
 ```bash
 npm run build
 # or
