@@ -21,10 +21,15 @@ class Resource {
     return result.rows[0];
   }
 
-  static async findByEndpointId(endpoint_id, page, limit) {
-    const text = `SELECT * FROM resources WHERE endpoint_id = $1 ORDER BY created_at DESC${ page || limit  ? ' LIMIT $2 OFFSET $3' : ''}`;
-    const limits = (page || limit) ? [limit || 10, (page - 1) * limit || 0] : [];
-    const result = await query(text, [endpoint_id, ...limits]);
+  /**
+   * All resources of an endpoint in the canonical (-created_at, -id) order.
+   * Filtering, sorting and pagination happen in memory on top of this
+   * (see controllers/mockController.js) so that filters always apply before
+   * pagination, whatever the pagination style.
+   */
+  static async findByEndpointId(endpoint_id) {
+    const text = 'SELECT * FROM resources WHERE endpoint_id = $1 ORDER BY created_at DESC, id DESC';
+    const result = await query(text, [endpoint_id]);
     return result.rows;
   }
   
