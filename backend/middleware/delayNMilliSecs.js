@@ -1,16 +1,18 @@
-export const delayNMilliSecs = (req, res, next) => {
-  if (!req.query || !req.query.delay) {
+const MAX_DELAY_MS = 30000;
+
+const delayNMilliSecs = (req, res, next) => {
+  if (!req.query || req.query.delay === undefined) {
     return next();
   }
-  let n;
-  if (!isNaN(req.query.delay) ) {
-    n = parseInt(req.query.delay, 10); 
+  const raw = req.query.delay;
+  const n = /^\d+$/.test(String(raw)) ? parseInt(raw, 10) : NaN;
+  if (Number.isNaN(n) || n < 0) {
+    return res.status(400).json({ error: 'Delay must be a non-negative integer (milliseconds)', code: 'INVALID_DELAY' });
   }
-  console.log("delay: ", n );
-  if (typeof n !== 'number' || isNaN(n) || n < 0) {
-    return res.status(400).json({ error: 'Delay must be a non-negative number'});
+  if (n > MAX_DELAY_MS) {
+    return res.status(400).json({ error: `Delay must not exceed ${MAX_DELAY_MS} ms`, code: 'INVALID_DELAY' });
   }
-  return setTimeout(() => {
-      next();
-    }, n);
+  return setTimeout(next, n);
 };
+
+module.exports = { delayNMilliSecs, MAX_DELAY_MS };

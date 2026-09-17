@@ -11,10 +11,19 @@ const app = express();
 
 app.use(express.json());
 app.use(morgan('dev'));
+app.set('trust proxy', 1);
 app.use(cors({
   origin: '*', // Allow all origins for development
-  methods: ['GET', 'POST', 'PUT','PATCH', 'DELETE'], // Allow specific methods
-  allowedHeaders: ['Content-Type', 'Authorization'] // Allow specific headers
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 'Authorization', 'Accept',
+    'X-API-Version', 'API-Version',      // header-based API versioning
+    'If-Match', 'If-None-Match',         // ETag conditional requests
+  ],
+  exposedHeaders: [
+    'ETag', 'Link', 'X-Total-Count', 'X-API-Version',
+    'Deprecation', 'Sunset', 'Vary',
+  ],
 }));
 
 app.use('/api/v1', routes);

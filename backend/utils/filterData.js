@@ -1,4 +1,4 @@
-const RSERVED_QUERY_PARAMS = ['page', 'limit', 'sort', 'fields','delay'];
+const { RESERVED_QUERY_PARAMS } = require('./queryParams');
 
 function filterData(req, res, data) {
   // Return empty array if data is empty
@@ -37,7 +37,7 @@ function filterData(req, res, data) {
   const filters = {};
   for (const [key, val] of Object.entries(req.query)) {
     const field = key;
-    if (RSERVED_QUERY_PARAMS.includes(field)) continue; // Skip reserved query params
+    if (RESERVED_QUERY_PARAMS.includes(field)) continue; // Skip reserved query params
     var operator = 'eq'; // default operator
     var value = val; // default value
 
@@ -48,9 +48,8 @@ function filterData(req, res, data) {
 
     if (validFields[field] && operators[validFields[field]][operator]) {
       filters[field] = { operator, value: value };
-      console.log("filters: ", filters)
     } else {
-      throw { status:400, message: `Invalid field or operator: ${key}`};
+      throw { status: 400, code: 'INVALID_FILTER', message: `Invalid field or operator: ${key}` };
     }
   }
 
@@ -72,7 +71,7 @@ function filterData(req, res, data) {
             return false;
         }
       } catch (error) {
-        throw { status:400, message: `Invalid value for ${field}: ${value}`};
+        throw { status: 400, code: 'INVALID_FILTER', message: `Invalid value for ${field}: ${value}` };
       }
     });
   });
